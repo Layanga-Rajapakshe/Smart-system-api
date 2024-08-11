@@ -7,16 +7,38 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+
+    birthday: {
+        type: Date,
+        required: true,
+        default: Date.now
+    },
+    userId: {
+        type: String,
+        required: true,
+        default: '0000'
+    },
+
+
+    hired_date: {
+            type: Date,
+            required: true,
+            default: Date.now
+        },
+
+    post:{
+        type:String,
+        required:true,
+        default:"Clerk",
+    },
+
     role: {
         type: String,
         required: true,
         enum: ['Employee', 'Manager', 'CEO'],
         default: 'Employee'
     },
-    team: {
-        type: String,
-        required: true
-    },
+
     status: {
         type: String,
         enum: ['active', 'inactive'],
@@ -43,6 +65,34 @@ const employeeSchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
+
+    agreed_basic: {
+        type: Number,
+        required: true,
+        default: 0},
+
+    re_allowance: {
+            type: Number,
+            required: true,
+            default: 0},
+    single_ot:{
+        type:Number,
+        default:0,
+        required:true,
+    },
+    double_ot:{
+        type:Number,
+        required:true,
+        default:0,
+    },
+    meal_allowance:
+    {
+        type:Number,
+        reqired:true,
+        default:0,
+
+    },
+
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',
