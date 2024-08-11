@@ -52,10 +52,13 @@ const employeeSchema = new mongoose.Schema({
     timestamps: true
 });
 
-
+// Pre-save hook to hash the password with salt
 employeeSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
+    
+    // Generate salt and hash the password
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
@@ -64,12 +67,12 @@ employeeSchema.methods.generateAuthToken = function () {
     const token = jwt.sign(
         { _id: this._id, role: this.role, company: this.company },
         process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: '15d' }
     );
     return token;
 };
 
-
+// Method to check password validity
 employeeSchema.methods.checkPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
