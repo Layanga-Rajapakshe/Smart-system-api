@@ -4,7 +4,11 @@ const logger = require('../utils/Logger');
 
 const authenticateUser = async (req, res, next) => {
     try {
-        const token = req.header('Authorization').replace('Bearer ', '');
+        const token = req.cookies.auth_token; // Get the token from the cookie
+        if (!token) {
+            throw new Error('Authentication token not found');
+        }
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await Employee.findById(decoded._id);
 

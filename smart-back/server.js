@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
+
 const CompanyRoute = require('./routes/CompaniesRoute'); 
 const EmployeeRoute = require('./routes/EmployeeRoute'); 
 const AuthRoute = require('./routes/AuthRoute'); 
@@ -9,7 +10,8 @@ const AuthRoute = require('./routes/AuthRoute');
 const app = express();
 const PORT = process.env.PORT 
 const MONGO_URL = process.env.MONGO_URL; 
-
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 app.use(express.json());
 
