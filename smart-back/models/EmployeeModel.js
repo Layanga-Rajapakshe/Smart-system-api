@@ -7,16 +7,38 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+
+    birthday: {
+        type: Date,
+        required: true,
+        default: Date.now
+    },
+    userId: {
+        type: String,
+        required: true,
+        default: '0000'
+    },
+
+
+    hired_date: {
+            type: Date,
+            required: true,
+            default: Date.now
+        },
+
+    post:{
+        type:String,
+        required:true,
+        default:"Clerk",
+    },
+
     role: {
         type: String,
         required: true,
         enum: ['Employee', 'Manager', 'CEO'],
         default: 'Employee'
     },
-    team: {
-        type: String,
-        required: true
-    },
+
     status: {
         type: String,
         enum: ['active', 'inactive'],
@@ -43,6 +65,34 @@ const employeeSchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
+
+    agreed_basic: {
+        type: Number,
+        required: true,
+        default: 0},
+
+    re_allowance: {
+            type: Number,
+            required: true,
+            default: 0},
+    single_ot:{
+        type:Number,
+        default:0,
+        required:true,
+    },
+    double_ot:{
+        type:Number,
+        required:true,
+        default:0,
+    },
+    meal_allowance:
+    {
+        type:Number,
+        reqired:true,
+        default:0,
+
+    },
+
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',
@@ -52,10 +102,13 @@ const employeeSchema = new mongoose.Schema({
     timestamps: true
 });
 
-
+// Pre-save hook to hash the password with salt
 employeeSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
+    
+    // Generate salt and hash the password
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
@@ -64,12 +117,12 @@ employeeSchema.methods.generateAuthToken = function () {
     const token = jwt.sign(
         { _id: this._id, role: this.role, company: this.company },
         process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: '15d' }
     );
     return token;
 };
 
-
+// Method to check password validity
 employeeSchema.methods.checkPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };

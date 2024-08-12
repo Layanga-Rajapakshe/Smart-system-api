@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const CompaniesSchema = mongoose.Schema({
+const CompaniesSchema = new mongoose.Schema({
     c_name: {
         type: String,
         required: [true, "Please enter the Company name"]
@@ -11,7 +11,7 @@ const CompaniesSchema = mongoose.Schema({
             required: [true, "Please enter the street name"]
         },
         number: {
-            type: String, // Consider using String to accommodate any potential format
+            type: String, 
             required: [true, "Please enter the street number"]
         },
         lane: {
@@ -28,7 +28,11 @@ const CompaniesSchema = mongoose.Schema({
             message: props => `${props.value} is not a valid 10 digit number!`
         },
         required: [true, "Please enter the phone number"]
-    }
+    },
+    employees: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee'
+    }]
 }, {
     timestamps: true
 });
