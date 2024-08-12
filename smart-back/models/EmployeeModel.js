@@ -60,11 +60,11 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    company: {
+    /*company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
         required: function() { return this.role !== 'SuperAdmin'; }
-    },
+    },*/
 
     agreed_basic: {
         type: Number,
@@ -93,11 +93,11 @@ const employeeSchema = new mongoose.Schema({
 
     },
 
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
-        required: function() { return this.role !== 'SuperAdmin'; }
-    }
+    // createdBy: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Employee',
+    //     required: function() { return this.role !== 'SuperAdmin'; }
+    // }
 }, {
     timestamps: true
 });
