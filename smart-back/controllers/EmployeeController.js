@@ -3,11 +3,12 @@ const logger = require('../utils/Logger');
 
 const getEmployees = async (req, res) => {
     try {
-        //if (req.user.role !== 'CEO') {
-        //    logger.error(`Unauthorized access attempt by: ${req.user.email}`);
-        //    return res.status(403).json({ message: 'Only CEOs can view employees.' });
-        //}
+        if (req.user.role !== 'CEO') {
+            logger.error(`Unauthorized access attempt by: ${req.user.email}`);
+            return res.status(403).json({ message: 'Only CEOs can view employees.' });
+        }
 
+        // Assuming 'company' is a field in your Employee model
         const employees = await Employee.find({ company: req.user.company });
         logger.log(`Employees fetched for company: ${req.user.company}`);
         res.status(200).json(employees);
@@ -27,7 +28,7 @@ const getEmployee = async (req, res) => {
         const { id } = req.params;
         const employee = await Employee.findById(id);
 
-        if (!employee || employee.company.toString() !== req.user.company.toString()) {
+        if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
             logger.error(`Employee not found or does not belong to the company: ${id}`);
             return res.status(404).json({ message: `Employee not found with id ${id}` });
         }
@@ -42,10 +43,10 @@ const getEmployee = async (req, res) => {
 
 const createEmployee = async (req, res) => {
     try {
-       // if (req.user.role !== 'CEO') {
-        //    logger.error(`Unauthorized employee creation attempt by: ${req.user.email}`);
-        //    return res.status(403).json({ message: 'Only CEOs can create employees.' });
-        //}
+        if (req.user.role !== 'CEO') {
+            logger.error(`Unauthorized employee creation attempt by: ${req.user.email}`);
+            return res.status(403).json({ message: 'Only CEOs can create employees.' });
+        }
 
         const employee = new Employee({
             ...req.body,
@@ -72,7 +73,7 @@ const updateEmployee = async (req, res) => {
         const { id } = req.params;
         const employee = await Employee.findById(id);
 
-        if (!employee || employee.company.toString() !== req.user.company.toString()) {
+        if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
             logger.error(`Employee not found or does not belong to the company: ${id}`);
             return res.status(404).json({ message: `Employee not found with id ${id}` });
         }
@@ -97,7 +98,7 @@ const deleteEmployee = async (req, res) => {
         const { id } = req.params;
         const employee = await Employee.findById(id);
 
-        if (!employee || employee.company.toString() !== req.user.company.toString()) {
+        if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
             logger.error(`Employee not found or does not belong to the company: ${id}`);
             return res.status(404).json({ message: `Employee not found with id ${id}` });
         }

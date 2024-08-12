@@ -20,4 +20,16 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { login };
+
+const logout = (req, res) => {
+    try {
+        
+        logger.log(`User logged out: ${req.user.email}`);
+        res.status(200).json({ message: 'Logged out successfully' });
+    } catch (error) {
+        logger.error(`Logout error: ${error.message}`);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { login, logout };

@@ -7,7 +7,6 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-
     birthday: {
         type: Date,
         required: true,
@@ -15,30 +14,24 @@ const employeeSchema = new mongoose.Schema({
     },
     userId: {
         type: String,
-        required: true,
-        default: '0000'
+        required: true
     },
-
-
     hired_date: {
-            type: Date,
-            required: true,
-            default: Date.now
-        },
-
-    post:{
-        type:String,
-        required:true,
-        default:"Clerk",
+        type: Date,
+        required: true,
+        default: Date.now
     },
-
+    post: {
+        type: String,
+        required: true,
+        default: "Clerk"
+    },
     role: {
         type: String,
         required: true,
-        enum: ['Employee', 'Manager', 'CEO','SuperAdmin','Admin'],
+        enum: ['Employee', 'Manager', 'CEO', 'SuperAdmin', 'Admin'],
         default: 'Employee'
     },
-
     status: {
         type: String,
         enum: ['active', 'inactive'],
@@ -60,44 +53,41 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    /*company: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company',
-        required: function() { return this.role !== 'SuperAdmin'; }
-    },*/
-
     agreed_basic: {
         type: Number,
         required: true,
-        default: 0},
-
+        default: 0
+    },
     re_allowance: {
-            type: Number,
-            required: true,
-            default: 0},
-    single_ot:{
-        type:Number,
-        default:0,
-        required:true,
+        type: Number,
+        required: true,
+        default: 0
     },
-    double_ot:{
-        type:Number,
-        required:true,
-        default:0,
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: function() { return this.role !== 'SuperAdmin'; }
     },
-    meal_allowance:
-    {
-        type:Number,
-        reqired:true,
-        default:0,
-
+    single_ot: {
+        type: Number,
+        required: true,
+        default: 0
     },
-
-    // createdBy: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Employee',
-    //     required: function() { return this.role !== 'SuperAdmin'; }
-    // }
+    double_ot: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    meal_allowance: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee',
+        required: function() { return this.role !== 'SuperAdmin'; }
+    }
 }, {
     timestamps: true
 });
@@ -115,7 +105,7 @@ employeeSchema.pre('save', async function (next) {
 // Method to generate JWT token
 employeeSchema.methods.generateAuthToken = function () {
     const token = jwt.sign(
-        { _id: this._id, role: this.role, company: this.company },
+        { _id: this._id, role: this.role },
         process.env.JWT_SECRET,
         { expiresIn: '15d' }
     );
