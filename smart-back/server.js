@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
 mongoose.connect(MONGO_URL)
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`Node API is running on port ${PORT}`);
+            console.log(`SmartSystem API is running on port ${PORT}`);
         });
         console.log('Connected to MongoDB');
     })
