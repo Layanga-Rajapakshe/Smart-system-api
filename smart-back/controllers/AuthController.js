@@ -23,6 +23,7 @@ const login = async (req, res) => {
 
 const logout = (req, res) => {
     try {
+        localStorage.removeItem('token');
         
         logger.log(`User logged out: ${req.user.email}`);
         res.status(200).json({ message: 'Logged out successfully' });
