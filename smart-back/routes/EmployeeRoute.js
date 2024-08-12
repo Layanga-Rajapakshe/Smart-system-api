@@ -6,7 +6,7 @@ const authenticateUser = require('../middleware/AuthenticateUser');
 
 router.get('/', authenticateUser, getEmployees);
 router.get('/:id', authenticateUser, getEmployee);
-router.post('/', authenticateUser, createEmployee);
+router.post('/', createEmployee);
 router.put('/:id', authenticateUser, updateEmployee);
 router.delete('/:id', authenticateUser, deleteEmployee);
 

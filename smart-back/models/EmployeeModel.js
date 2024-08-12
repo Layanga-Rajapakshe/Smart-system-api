@@ -63,7 +63,7 @@ const employeeSchema = new mongoose.Schema({
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
-        required: true
+        required: function() { return this.role !== 'SuperAdmin'; }
     },
 
     agreed_basic: {
@@ -96,7 +96,7 @@ const employeeSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',
-        required: true
+        required: function() { return this.role !== 'SuperAdmin'; }
     }
 }, {
     timestamps: true
