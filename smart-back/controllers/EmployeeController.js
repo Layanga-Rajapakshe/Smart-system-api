@@ -3,10 +3,10 @@ const logger = require('../utils/Logger');
 
 const getEmployees = async (req, res) => {
     try {
-        if (req.user.role !== 'CEO') {
-            logger.error(`Unauthorized access attempt by: ${req.user.email}`);
-            return res.status(403).json({ message: 'Only CEOs can view employees.' });
-        }
+        //if (req.user.role !== 'CEO') {
+        //    logger.error(`Unauthorized access attempt by: ${req.user.email}`);
+        //    return res.status(403).json({ message: 'Only CEOs can view employees.' });
+        //}
 
         const employees = await Employee.find({ company: req.user.company });
         logger.log(`Employees fetched for company: ${req.user.company}`);
@@ -42,10 +42,10 @@ const getEmployee = async (req, res) => {
 
 const createEmployee = async (req, res) => {
     try {
-        if (req.user.role !== 'CEO') {
-            logger.error(`Unauthorized employee creation attempt by: ${req.user.email}`);
-            return res.status(403).json({ message: 'Only CEOs can create employees.' });
-        }
+       // if (req.user.role !== 'CEO') {
+        //    logger.error(`Unauthorized employee creation attempt by: ${req.user.email}`);
+        //    return res.status(403).json({ message: 'Only CEOs can create employees.' });
+        //}
 
         const employee = new Employee({
             ...req.body,
