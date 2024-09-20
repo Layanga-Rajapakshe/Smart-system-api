@@ -7,7 +7,6 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-
     birthday: {
         type: Date,
         required: true,
@@ -18,27 +17,21 @@ const employeeSchema = new mongoose.Schema({
         required: true,
         default: '0000'
     },
-
-
     hired_date: {
-            type: Date,
-            required: true,
-            default: Date.now
-        },
-
-    post:{
-        type:String,
-        required:true,
-        default:"Clerk",
+        type: Date,
+        required: true,
+        default: Date.now
     },
-
-    role: {
+    post: {
         type: String,
         required: true,
-        enum: ['Employee', 'Manager', 'CEO'],
-        default: 'Employee'
+        default: "Clerk"
     },
-
+    role: {
+        type: mongoose.Schema.Types.ObjectId, // Reference to the Role model
+        ref: 'Role',
+        required: true
+    },
     status: {
         type: String,
         enum: ['active', 'inactive'],
@@ -65,34 +58,31 @@ const employeeSchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
-
     agreed_basic: {
         type: Number,
         required: true,
-        default: 0},
-
+        default: 0
+    },
     re_allowance: {
-            type: Number,
-            required: true,
-            default: 0},
-    single_ot:{
-        type:Number,
-        default:0,
-        required:true,
+        type: Number,
+        required: true,
+        default: 0
     },
-    double_ot:{
-        type:Number,
-        required:true,
-        default:0,
+    single_ot: {
+        type: Number,
+        required: true,
+        default: 0
     },
-    meal_allowance:
-    {
-        type:Number,
-        reqired:true,
-        default:0,
-
+    double_ot: {
+        type: Number,
+        required: true,
+        default: 0
     },
-
+    meal_allowance: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',
@@ -106,7 +96,6 @@ const employeeSchema = new mongoose.Schema({
 employeeSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
     
-    // Generate salt and hash the password
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
