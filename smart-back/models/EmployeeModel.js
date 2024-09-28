@@ -27,10 +27,9 @@ const employeeSchema = new mongoose.Schema({
         default: "Clerk"
     },
     role: {
-        type: String,
-        required: true,
-        enum: ['Employee', 'Manager', 'CEO', 'SuperAdmin', 'Admin'],
-        default: 'Employee'
+        type: mongoose.Schema.Types.ObjectId, // Reference to the Role model
+        ref: 'Role',
+        required: true
     },
     status: {
         type: String,
@@ -53,6 +52,11 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: true
+    },
     agreed_basic: {
         type: Number,
         required: true,
@@ -62,11 +66,6 @@ const employeeSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0
-    },
-    company: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company',
-        required: function() { return this.role !== 'SuperAdmin'; }
     },
     single_ot: {
         type: Number,
@@ -96,7 +95,6 @@ const employeeSchema = new mongoose.Schema({
 employeeSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
     
-    // Generate salt and hash the password
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();

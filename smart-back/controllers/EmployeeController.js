@@ -1,11 +1,20 @@
 const Employee = require('../models/EmployeeModel');
+const Role = require('../models/RoleModel');
 const logger = require('../utils/Logger');
 
+// Helper function to check permissions
+const hasPermission = (role, requiredPermission) => {
+    return role.permissions.includes(requiredPermission);
+};
+
+// Fetch all employees
 const getEmployees = async (req, res) => {
     try {
-        if (req.user.role !== 'CEO') {
-            logger.error(`Unauthorized access attempt by: ${req.user.email}`);
-            return res.status(403).json({ message: 'Only CEOs can view employees.' });
+        const role = await Role.findById(req.user.role);
+
+        if (!hasPermission(role, 'view_employees')) {
+            logger.error(`Unauthorized access attempt by: ${req.user._id}`);
+            return res.status(403).json({ message: 'You do not have permission to view employees.' });
         }
 
         // Assuming 'company' is a field in your Employee model
@@ -18,11 +27,14 @@ const getEmployees = async (req, res) => {
     }
 };
 
+// Fetch a single employee by ID
 const getEmployee = async (req, res) => {
     try {
-        if (req.user.role !== 'CEO') {
-            logger.error(`Unauthorized access attempt by: ${req.user.email}`);
-            return res.status(403).json({ message: 'Only CEOs can view employee details.' });
+        const role = await Role.findById(req.user.role);
+
+        if (!hasPermission(role, 'view_employee_details')) {
+            logger.error(`Unauthorized access attempt by: ${req.user._id}`);
+            return res.status(403).json({ message: 'You do not have permission to view employee details.' });
         }
 
         const { id } = req.params;
@@ -41,11 +53,14 @@ const getEmployee = async (req, res) => {
     }
 };
 
+// Create a new employee
 const createEmployee = async (req, res) => {
     try {
-        if (req.user.role !== 'CEO') {
-            logger.error(`Unauthorized employee creation attempt by: ${req.user.email}`);
-            return res.status(403).json({ message: 'Only CEOs can create employees.' });
+        const role = await Role.findById(req.user.role);
+
+        if (!hasPermission(role, 'create_employee')) {
+            logger.error(`Unauthorized employee creation attempt by: ${req.user._id}`);
+            return res.status(403).json({ message: 'You do not have permission to create employees.' });
         }
 
         const employee = new Employee({
@@ -55,7 +70,7 @@ const createEmployee = async (req, res) => {
         });
 
         await employee.save();
-        logger.log(`Employee created: ${employee.email}`);
+        logger.log(`Employee created: ${employee._id}`);
         res.status(201).json(employee);
     } catch (error) {
         logger.error(`Failed to create employee: ${error.message}`);
@@ -63,11 +78,14 @@ const createEmployee = async (req, res) => {
     }
 };
 
+// Update an existing employee
 const updateEmployee = async (req, res) => {
     try {
-        if (req.user.role !== 'CEO') {
-            logger.error(`Unauthorized employee update attempt by: ${req.user.email}`);
-            return res.status(403).json({ message: 'Only CEOs can update employees.' });
+        const role = await Role.findById(req.user.role);
+
+        if (!hasPermission(role, 'update_employee')) {
+            logger.error(`Unauthorized employee update attempt by: ${req.user._id}`);
+            return res.status(403).json({ message: 'You do not have permission to update employees.' });
         }
 
         const { id } = req.params;
@@ -80,7 +98,7 @@ const updateEmployee = async (req, res) => {
 
         Object.assign(employee, req.body);
         await employee.save();
-        logger.log(`Employee updated: ${employee.email}`);
+        logger.log(`Employee updated: ${employee._id}`);
         res.status(200).json(employee);
     } catch (error) {
         logger.error(`Failed to update employee: ${error.message}`);
@@ -88,11 +106,14 @@ const updateEmployee = async (req, res) => {
     }
 };
 
+// Delete an employee
 const deleteEmployee = async (req, res) => {
     try {
-        if (req.user.role !== 'CEO') {
-            logger.error(`Unauthorized employee deletion attempt by: ${req.user.email}`);
-            return res.status(403).json({ message: 'Only CEOs can delete employees.' });
+        const role = await Role.findById(req.user.role);
+
+        if (!hasPermission(role, 'delete_employee')) {
+            logger.error(`Unauthorized employee deletion attempt by: ${req.user._id}`);
+            return res.status(403).json({ message: 'You do not have permission to delete employees.' });
         }
 
         const { id } = req.params;
@@ -104,7 +125,7 @@ const deleteEmployee = async (req, res) => {
         }
 
         await employee.remove();
-        logger.log(`Employee deleted: ${employee.email}`);
+        logger.log(`Employee deleted: ${employee._id}`);
         res.status(200).json({ message: 'Employee deleted successfully' });
     } catch (error) {
         logger.error(`Failed to delete employee: ${error.message}`);
