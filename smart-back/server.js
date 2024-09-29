@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const CompanyRoute = require('./routes/CompaniesRoute'); 
 const EmployeeRoute = require('./routes/EmployeeRoute'); 
 const AuthRoute = require('./routes/AuthRoute'); 
+const RoleRoute = require('./routes/RoleRoute')
 
 const app = express();
 const PORT = process.env.PORT 
@@ -19,7 +20,7 @@ app.use(express.json());
 app.use('/api/company', CompanyRoute);
 app.use('/api/employees', EmployeeRoute); 
 app.use('/api/auth', AuthRoute); 
-
+app.use('/api/role',RoleRoute)
 
 app.get('/', (req, res) => {
     res.send('Hello node api');
