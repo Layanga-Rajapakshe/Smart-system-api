@@ -29,23 +29,23 @@ const AttendanceSchema = new mongoose.Schema({
     },
     extraWorkingHrs:
     {
-        type:number
+        type: Number
     },
     shortWorkingHrs:
     {
-        type:number
+        type: Number
     },
     singleOt:
     {
-        type:number
+        type:Number
     },
     doubleOt:
     {
-        type:number
+        type:Number
     },
     poyaOt:
     {
-        type:number
+        type:Number
     }
 }, { 
     timestamps: true

@@ -19,21 +19,27 @@ const UploadExcellSheet = async(req,res)=>//This will create new salary month ba
 
         const attendanceData = [];//array - holds json - data
 
-        worksheet.forEach((row)=>
+        worksheet.forEach(async (row)=>
         {
-            const employeeId = row['Employee ID'];
-            const date = row ['Date'];
-            const inTime = row['IN'];
-            const outTime = row['OUT'];
+            const UserId = row['Employee ID'];
+            const Date = row ['Date'];
+            const In = row['IN'];
+            const Out = row['OUT'];
+            const TimePeriod = row['Work HRs'];
 
-            if(!employeeId || !date || !inTime || !outTime ) return;
+            if(!UserId || !Date || !In || !Out ) return;
 
-            attendanceData.push({
-                employeeId,
-                date,
-                inTime,
-                outTime,
-            });
+            await Attendance.findOneAndUpdate(
+                { UserId: UserId, Date: Date }, // Filter by UserId and Date
+                { 
+                    $set: {
+                        In: In,
+                        Out: Out,
+                        TimePeriod: TimePeriod,
+                    } 
+                },
+                { upsert: true, new: true } // Insert new if no match found, and return the updated document
+            );
         });
 
         await Attendance.insertMany(attendanceData);
@@ -49,6 +55,11 @@ const UploadExcellSheet = async(req,res)=>//This will create new salary month ba
     }
 };
 
+const addSalMonth = async(req,res)=>
+{
+    
+};
+
 const processAttendanceData = async(req,res)=>//after the excution of UploadExcellSheet, this will process a complete salary month using google calender API which is a slary month for each employee is starts from earlier month's 21st to this months 20, all of the holidays should be marked according to th calender as per , ISholiday = true
 {
 
@@ -61,10 +72,11 @@ const reShowAttendanceRecords = async(req,res)=>//this will re load the processe
 
 module.exports=
 {
-    upload,
     UploadExcellSheet,
     processAttendanceData,
     reShowAttendanceRecords,
+    addSalMonth,
+    upload
 
 
 };
