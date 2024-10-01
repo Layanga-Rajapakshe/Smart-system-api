@@ -22,6 +22,30 @@ const AttendanceSchema = new mongoose.Schema({
     isLeave: {
         type: Boolean,
         default: false 
+    },
+    stdHours:
+    {
+        type: Number,
+    },
+    extraWorkingHrs:
+    {
+        type:number
+    },
+    shortWorkingHrs:
+    {
+        type:number
+    },
+    singleOt:
+    {
+        type:number
+    },
+    doubleOt:
+    {
+        type:number
+    },
+    poyaOt:
+    {
+        type:number
     }
 }, { 
     timestamps: true
