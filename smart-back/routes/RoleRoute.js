@@ -1,6 +1,6 @@
 const express = require('express');
 const { createRole, assignRoleToEmployee, getRoles, getRolesByPermission } = require('../controllers/RoleController');
-const checkPermissionMiddleware = require('../middleware/checkPermissionMiddleware');
+const checkPermissionMiddleware = require('../middleware/CheckPermission');
 
 const router = express.Router();
 
