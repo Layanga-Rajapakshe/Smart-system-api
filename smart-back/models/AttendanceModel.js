@@ -46,6 +46,10 @@ const AttendanceSchema = new mongoose.Schema({
     poyaOt:
     {
         type:Number
+    },
+    holiday:
+    {
+        type:Number//0-not a holiday,1-saturday,2-sunday,3-poya,4-public
     }
 }, { 
     timestamps: true
