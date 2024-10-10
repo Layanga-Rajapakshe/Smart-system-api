@@ -82,11 +82,7 @@ const employeeSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
-        required: function() { return this.role !== 'SuperAdmin'; }
-    }
+    
 }, {
     timestamps: true
 });
