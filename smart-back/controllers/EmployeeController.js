@@ -12,7 +12,7 @@ const getEmployees = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
 
-        if (!hasPermission(role, 'view_employees')) {
+        if (!hasPermission(role, 'view_employee_details')) {
             logger.error(`Unauthorized access attempt by: ${req.user._id}`);
             return res.status(403).json({ message: 'You do not have permission to view employees.' });
         }
@@ -27,7 +27,7 @@ const getEmployees = async (req, res) => {
     }
 };
 
-// Fetch a single employee by ID
+
 const getEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
@@ -53,7 +53,7 @@ const getEmployee = async (req, res) => {
     }
 };
 
-// Create a new employee
+
 const createEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
@@ -78,7 +78,7 @@ const createEmployee = async (req, res) => {
     }
 };
 
-// Update an existing employee
+
 const updateEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
@@ -106,7 +106,7 @@ const updateEmployee = async (req, res) => {
     }
 };
 
-// Delete an employee
+
 const deleteEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);

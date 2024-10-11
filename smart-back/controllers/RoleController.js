@@ -7,13 +7,13 @@ const createRole = async (req, res) => {
     try {
         const { name, permissions } = req.body;
 
-        // Check if role with the same name already exists
+        
         const existingRole = await Role.findOne({ name });
         if (existingRole) {
             return res.status(400).json({ message: `Role '${name}' already exists.` });
         }
 
-        // Create new role
+        
         const role = new Role({ name, permissions });
         await role.save();
 
@@ -25,7 +25,7 @@ const createRole = async (req, res) => {
     }
 };
 
-// Assign a role to an employee
+
 const assignRoleToEmployee = async (req, res) => {
     try {
         const { employeeId, roleId } = req.body;
