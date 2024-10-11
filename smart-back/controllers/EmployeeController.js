@@ -27,16 +27,18 @@ const getEmployees = async (req, res) => {
 };
 
 // Fetch a single employee by ID
+// Fetch a single employee by ID
 const getEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
+        const { id } = req.params;
 
-        if (!hasPermission(role, 'view_employee_details')) {
+        // Allow users to view their own details even without 'view_employee_details' permission
+        if (req.user._id.toString() !== id && !hasPermission(role, 'view_employee_details')) {
             logger.error(`Unauthorized access attempt by: ${req.user._id}`);
             return res.status(403).json({ message: 'You do not have permission to view employee details.' });
         }
 
-        const { id } = req.params;
         const employee = await Employee.findById(id);
 
         if (!employee || employee.company.toString() !== req.user.company.toString()) {
@@ -81,13 +83,14 @@ const createEmployee = async (req, res) => {
 const updateEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
+        const { id } = req.params;
 
-        if (!hasPermission(role, 'update_employee')) {
+        // Allow users to update their own details even without 'update_employee' permission
+        if (req.user._id.toString() !== id && !hasPermission(role, 'update_employee')) {
             logger.error(`Unauthorized employee update attempt by: ${req.user._id}`);
             return res.status(403).json({ message: 'You do not have permission to update employees.' });
         }
 
-        const { id } = req.params;
         const employee = await Employee.findById(id);
 
         if (!employee || employee.company.toString() !== req.user.company.toString()) {
@@ -95,7 +98,18 @@ const updateEmployee = async (req, res) => {
             return res.status(404).json({ message: `Employee not found with id ${id}` });
         }
 
-        Object.assign(employee, req.body);
+        // Allow only specific fields to be updated if the employee is updating their own details
+        if (req.user._id.toString() === id) {
+            const allowedFields = ['name', 'email', 'birthday', 'avatar']; // example fields users can update
+            Object.keys(req.body).forEach(field => {
+                if (allowedFields.includes(field)) {
+                    employee[field] = req.body[field];
+                }
+            });
+        } else {
+            Object.assign(employee, req.body);
+        }
+
         await employee.save();
         logger.log(`Employee updated: ${employee._id}`);
         res.status(200).json(employee);
@@ -104,6 +118,7 @@ const updateEmployee = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 // Delete an employee
 const deleteEmployee = async (req, res) => {
