@@ -57,6 +57,11 @@ const employeeSchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
+    // Array of supervisees, referencing Employee model
+    supervisees: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee' 
+    }],
     agreed_basic: {
         type: Number,
         required: true,
