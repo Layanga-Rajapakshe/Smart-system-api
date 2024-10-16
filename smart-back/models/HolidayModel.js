@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const HolidaySchema = new mongoose.Schema({
-    Year:{
+    year:{
         type:Number,
         required:true
     },
-    Date:
+    date:
     {
         type:Date,
         required:true

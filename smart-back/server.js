@@ -9,6 +9,7 @@ const AuthRoute = require('./routes/AuthRoute');
 const RoleRoute = require('./routes/RoleRoute')
 const AttendanceRoute = require('./routes/AttendanceRoute');
 
+
 const app = express();
 const PORT = process.env.PORT 
 const MONGO_URL = process.env.MONGO_URL; 

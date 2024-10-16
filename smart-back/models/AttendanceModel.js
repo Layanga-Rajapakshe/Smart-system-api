@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const AttendanceSchema = new mongoose.Schema({
     UserId: {
-        type: mongoose.Schema.Types.ObjectId, 
+        type: Number, 
         ref: 'Employee',
         required: true
     },
@@ -11,13 +11,14 @@ const AttendanceSchema = new mongoose.Schema({
         required: true
     },
     In: {
-        type: Date // Store times as Date 
+        type: String // Store times as Date 
     },
     Out: {
-        type: Date // Store times as Date
+        type: String // Store times as Date
     },
     TimePeriod: {
-        type: Number, // Store the time difference in minutes and hours
+        type: String,
+        default:0 // Store the time difference in minutes and hours
     },
     isLeave: {
         type: Boolean,
