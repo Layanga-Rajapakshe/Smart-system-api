@@ -99,7 +99,7 @@ const updateEmployee = async (req, res) => {
 
         // Allow only specific fields to be updated if the employee is updating their own details
         if (req.user._id.toString() === id) {
-            const allowedFields = ['name', 'email', 'birthday', 'avatar']; // example fields users can update
+            const allowedFields = ['name', 'email', 'birthday', 'avatar','password']; // example fields users can update
             Object.keys(req.body).forEach(field => {
                 if (allowedFields.includes(field)) {
                     employee[field] = req.body[field];
