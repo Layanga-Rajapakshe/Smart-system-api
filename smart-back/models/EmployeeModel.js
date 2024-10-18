@@ -27,7 +27,7 @@ const employeeSchema = new mongoose.Schema({
         default: "Clerk"
     },
     role: {
-        type: mongoose.Schema.Types.ObjectId, // Reference to the Role model
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Role',
         required: true
     },
@@ -57,10 +57,9 @@ const employeeSchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
-    // Array of supervisees, referencing Employee model
     supervisees: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee' 
+        ref: 'Employee'
     }],
     agreed_basic: {
         type: Number,
@@ -87,7 +86,10 @@ const employeeSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
-    
+    passwordChangedAt: {
+        type: Date,
+        default: Date.now
+    }
 }, {
     timestamps: true
 });
@@ -98,11 +100,16 @@ employeeSchema.pre('save', async function (next) {
     
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    this.passwordChangedAt = Date.now();
     next();
 });
 
-// Method to generate JWT token
+// Generate JWT token
 employeeSchema.methods.generateAuthToken = function () {
+    if (this.isPasswordExpired()) {
+        throw new Error('Password expired. Please update your password.');
+    }
+    
     const token = jwt.sign(
         { _id: this._id, role: this.role },
         process.env.JWT_SECRET,
@@ -111,9 +118,17 @@ employeeSchema.methods.generateAuthToken = function () {
     return token;
 };
 
-// Method to check password validity
+// Check if password is valid
 employeeSchema.methods.checkPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
+};
+
+// Check if password has expired (4 months)
+employeeSchema.methods.isPasswordExpired = function () {
+    const currentDate = new Date();
+    const expiryDate = new Date(this.passwordChangedAt);
+    expiryDate.setMonth(expiryDate.getMonth() + 4);
+    return currentDate > expiryDate;
 };
 
 const Employee = mongoose.model('Employee', employeeSchema);
