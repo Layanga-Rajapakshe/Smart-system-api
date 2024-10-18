@@ -20,6 +20,7 @@ const UploadExcellSheet = async (req, res) => {
         if (worksheet.length === 0) {
             return res.status(400).json({ message: 'Empty or invalid Excel sheet' });
         }
+        const AttData = [];
 
         for (const row of worksheet) {
             const UserId = row['Employee ID'];
