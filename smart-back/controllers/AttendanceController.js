@@ -20,49 +20,51 @@ const UploadExcellSheet = async (req, res) => {
         if (worksheet.length === 0) {
             return res.status(400).json({ message: 'Empty or invalid Excel sheet' });
         }
-        const AttData = [];
 
         for (const row of worksheet) {
             const UserId = row['Employee ID'];
-            const DateRaw = row['Date'];  // Raw date value from Excel (assumed to be in valid format)
-            const InRaw = row['IN'];  // Raw time in "HH:MM:SS" format
-            const OutRaw = row['OUT'];  // Raw time in "HH:MM:SS" format
-            const WorkHrsRaw = row['Work HRs'];  // Work hours in "HH:MM:SS" format
+            const DateRaw = row['Date'];
+            const InRaw = row['IN'];  
+            const OutRaw = row['OUT'];
+            const WorkHrsRaw = row['Work Hrs'];
 
-            // Skip rows with missing essential data
             if (!UserId || !DateRaw || !InRaw || !OutRaw || !WorkHrsRaw) continue;
 
-            // Parse Date field (Excel stores dates as numbers)
-            const parsedDate = new Date((DateRaw - 25569) * 86400 * 1000); // Excel's date format fix
+            // Parse date as done previously
+            const parsedDate = new Date((DateRaw - 25569) * 86400 * 1000); 
 
-            // Convert work hours (HH:MM:SS) to total seconds
-            let timePeriodInSeconds = 0;
-            if (WorkHrsRaw && typeof WorkHrsRaw === 'string') {
-                const timeParts = WorkHrsRaw.split(':');
-                if (timeParts.length === 3) {
-                    timePeriodInSeconds = (parseInt(timeParts[0], 10) * 3600) + 
-                                          (parseInt(timeParts[1], 10) * 60) + 
-                                          parseInt(timeParts[2], 10);
-                }
-            }
+            // Convert InRaw and OutRaw from fractional Excel time to HH:MM:SS
+            const convertExcelTimeToString = (excelTime) => {
+                const totalSeconds = Math.round(excelTime * 24 * 60 * 60);
+                const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+                const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+                return `${hours}:${minutes}:${seconds}`;
+            };
 
-            // Check parsed data
+            const parsedInTime = convertExcelTimeToString(InRaw);
+            const parsedOutTime = convertExcelTimeToString(OutRaw);
+            const timePeriodInSeconds = convertExcelTimeToString(WorkHrsRaw);
+
+            // Convert Work HRs to seconds
+        
+
             console.log('Parsed Date:', parsedDate);
-            console.log('IN:', InRaw);
-            console.log('OUT:', OutRaw);
+            console.log('IN:', parsedInTime);
+            console.log('OUT:', parsedOutTime);
             console.log('Work HRs (seconds):', timePeriodInSeconds);
 
-            // Insert or update the attendance record
+            // Insert or update attendance
             await Attendance.findOneAndUpdate(
-                { UserId: UserId, Date: parsedDate }, // Match by UserId and Date
+                { UserId: UserId, Date: parsedDate }, 
                 {
                     $set: {
-                        In: InRaw,  // Store as a time string ("HH:MM:SS")
-                        Out: OutRaw,  // Store as a time string ("HH:MM:SS")
-                        TimePeriod: timePeriodInSeconds,  // Total work time in seconds
+                        In: parsedInTime,  
+                        Out: parsedOutTime,  
+                        TimePeriod: timePeriodInSeconds,  
                     }
                 },
-                { upsert: true, new: true } // Insert if not found, otherwise update
+                { upsert: true, new: true } 
             );
         }
 
@@ -73,6 +75,7 @@ const UploadExcellSheet = async (req, res) => {
         res.status(500).json({ message: 'Error uploading attendance data', error });
     }
 };
+
 
 
 
@@ -92,9 +95,16 @@ const addSalMonth = async(req,res)=>
     }
 };
 
-const processAttendanceData = async(req,res)=>//after the excution of UploadExcellSheet, this will process a complete salary month using google calender API which is a slary month for each employee is starts from earlier month's 21st to this months 20, all of the holidays should be marked according to th calender as per , ISholiday = true
+const processAttendanceData = async(parsedDate,UserId)=>//after the excution of UploadExcellSheet, this will process a complete salary month using google calender API which is a slary month for each employee is starts from earlier month's 21st to this months 20, all of the holidays should be marked according to th calender as per , ISholiday = true
 {
+    await Holidays.findHoliday(
+        { Date: parsedDate },
+       await Attendance.findOneAndUpdate(parsedDate,UserId)
 
+
+    
+        
+    );
 };
 
 const reShowAttendanceRecords = async(req,res)=>//this will re load the processed data from the db to the dash board for the confirmation and corrections
