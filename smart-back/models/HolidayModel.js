@@ -12,7 +12,7 @@ const HolidaySchema = new mongoose.Schema({
     },
     Name:
     {
-        type:String
+        type:Number
     }
 });
 

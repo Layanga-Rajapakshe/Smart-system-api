@@ -95,17 +95,31 @@ const addSalMonth = async(req,res)=>
     }
 };
 
+
 const processAttendanceData = async(parsedDate,UserId)=>//after the excution of UploadExcellSheet, this will process a complete salary month using google calender API which is a slary month for each employee is starts from earlier month's 21st to this months 20, all of the holidays should be marked according to th calender as per , ISholiday = true
 {
-    await Holidays.findHoliday(
-        { Date: parsedDate },
-       await Attendance.findOneAndUpdate(parsedDate,UserId)
 
-
-    
-        
+    await Attendance.findOneAndUpdate(
+        { UserId: UserId, Date: parsedDate }, 
+        {
+            $set: {
+                In: parsedInTime,  
+                Out: parsedOutTime,  
+                TimePeriod: timePeriodInSeconds,  
+            }
+        },
+        { upsert: true, new: true } 
     );
+
 };
+
+   
+
+
+
+ 
+
+
 
 const reShowAttendanceRecords = async(req,res)=>//this will re load the processed data from the db to the dash board for the confirmation and corrections
 {
