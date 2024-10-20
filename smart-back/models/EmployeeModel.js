@@ -13,7 +13,7 @@ const employeeSchema = new mongoose.Schema({
         default: Date.now
     },
     userId: {
-        type: String,
+        type: Number,
         required: true
     },
     hired_date: {

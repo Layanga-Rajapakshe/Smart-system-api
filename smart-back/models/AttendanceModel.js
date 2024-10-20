@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const AttendanceSchema = new mongoose.Schema({
     UserId: {
-        type: Number, 
+        type: String, 
         ref: 'Employee',
         required: true
     },
@@ -18,7 +18,7 @@ const AttendanceSchema = new mongoose.Schema({
     },
     TimePeriod: {
         type: String,
-        default:0 // Store the time difference in minutes and hours
+        default:"00:00:00" // Store the time difference in minutes and hours
     },
     isLeave: {
         type: Boolean,
@@ -26,31 +26,38 @@ const AttendanceSchema = new mongoose.Schema({
     },
     stdHours:
     {
-        type: Number,
+        type: String,
+        default:"09:00:00"
     },
     extraWorkingHrs:
     {
-        type: Number
+        type: String,
+        default:"00:00:00"
+
     },
     shortWorkingHrs:
     {
-        type: Number
+        type: String,
+        default:"00:00:00"
     },
     singleOt:
     {
-        type:Number
+        type:String,
+        default:"00:00:00"
     },
     doubleOt:
     {
-        type:Number
+        type:String,
+        default:"00:00:00"
     },
     poyaOt:
     {
-        type:Number
+        type:String,
+        default:"00:00:00"
     },
     holiday:
     {
-        type:Number//0-not a holiday,1-saturday,2-sunday,3-poya,4-public
+        type:Number//2-sunday,3-poya,4-public
     },
     isHoliday:
     {
