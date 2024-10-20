@@ -324,51 +324,39 @@ const reShowAttendanceRecords = async (req, res) => {
         let endDate;
 
         if (monthNum === 1) {
-            startDate = new Date(year - 1, 11, 21); // December 21 of the previous year
+            startDate = new Date(year - 1, 11, 22); // December 21 of the previous year
         } else {
-            startDate = new Date(year, monthNum - 1, 21);
+            startDate = new Date(year, monthNum - 1, 22);
             startDate.setMonth(startDate.getMonth() - 1);
         }
-        endDate = new Date(year, monthNum - 1, 20);
+        endDate = new Date(year, monthNum - 1, 21);
 
         // Log for debugging
         console.log('User ID:', userId);
         console.log('Start Date:', startDate);
         console.log('End Date:', endDate);
 
-        // Store attendance records for each day
-        let allAttendanceRecords = [];
+        // Test fetching without UserId filter
+        const attendanceRecords = await Attendance.find({
+            UserId: userId,
+            Date: {
+                $gte: startDate,
+                $lt: endDate
+            }
+        });
 
-        // Loop through each day in the date range
-        for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
-            const currentDate = new Date(d); // Create a copy of the current date
-            const dailyRecords = await Attendance.find({
-                UserId: userId,
-                Date: {
-                    $gte: currentDate,
-                    $lt: new Date(currentDate.getTime() + 86400000) // Next day
-                }
-            });
+        console.log('Attendance Records:', attendanceRecords); // Log fetched records
 
-            allAttendanceRecords = allAttendanceRecords.concat(dailyRecords); // Collect records
-        }
-
-        // Log all collected records for debugging
-        console.log('All Attendance Records:', allAttendanceRecords);
-
-        // If no records found, return an error message
-        if (!allAttendanceRecords || allAttendanceRecords.length === 0) {
+        if (!attendanceRecords || attendanceRecords.length === 0) {
             return res.status(404).json({ message: 'No attendance records found' });
         }
 
-        // Send the records back in the response
-        res.status(200).json(allAttendanceRecords);
+        res.status(200).json(attendanceRecords);
     } catch (error) {
         console.error('Error fetching attendance records:', error);
         res.status(500).json({ message: 'Error fetching attendance records', error });
     }
 };
-
 
 
 
