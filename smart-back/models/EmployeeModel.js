@@ -61,6 +61,10 @@ const employeeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee'
     }],
+    supervisor:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee'
+    },
     agreed_basic: {
         type: Number,
         required: true,
