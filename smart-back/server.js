@@ -8,6 +8,7 @@ const EmployeeRoute = require('./routes/EmployeeRoute');
 const AuthRoute = require('./routes/AuthRoute'); 
 const RoleRoute = require('./routes/RoleRoute')
 const AttendanceRoute = require('./routes/AttendanceRoute');
+const kpiRoutes = require('./routes/KPIroutes');
 
 
 const app = express();
@@ -24,6 +25,8 @@ app.use('/api/employees', EmployeeRoute);
 app.use('/api/auth', AuthRoute); 
 app.use('/api/role',RoleRoute)
 app.use('/api/attendance',AttendanceRoute);
+app.use('/api/kpis', kpiRoutes);
+
 
 
 app.get('/', (req, res) => {
