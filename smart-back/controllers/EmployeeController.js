@@ -26,23 +26,26 @@ const getEmployees = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 const getEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
         const { id } = req.params;
-
-        // Allow users to view their own details even without 'view_employee_details' permission
-        if (req.user._id.toString() !== id && !hasPermission(role, 'view_employee_details')) {
-            logger.error(`Unauthorized access attempt by: ${req.user._id}`);
-            return res.status(403).json({ message: 'You do not have permission to view employee details.' });
-        }
-
-        const employee = await Employee.findById(id);
+        
+        // Find the employee and populate the supervisor field
+        const employee = await Employee.findById(id).populate('supervisor');
 
         if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
-            logger.error(`Employee not found or does not belong to the company: ${id}`);
             return res.status(404).json({ message: `Employee not found with id ${id}` });
+        }
+
+        const isSelf = req.user._id.toString() === id;
+        const isSupervisor = employee.supervisor && employee.supervisor._id.toString() === req.user._id.toString();
+        const hasPermission = role && role.permissions.includes('view_employee_details');
+
+        // Allow access if the user is the employee, their supervisor, or has permission
+        if (!isSelf && !isSupervisor && !hasPermission) {
+            logger.error(`Unauthorized access attempt by: ${req.user._id}`);
+            return res.status(403).json({ message: 'You do not have permission to view employee details.' });
         }
 
         logger.log(`Employee fetched: ${employee.email}`);
