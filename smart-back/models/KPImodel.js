@@ -41,6 +41,11 @@ const kpiSchema = new mongoose.Schema({
         max: 5,
         required: true
     },
+    month: {
+        type: String,
+        required: true,
+        match: /^\d{4}-(0[1-9]|1[0-2])$/, // Validates "YYYY-MM" format
+    },
     createdAt: {
         type: Date,
         default: Date.now
