@@ -49,7 +49,7 @@ const addNewTask = async (req, res) => {
     try {
         const {
             UserId, StartingDate, TaskId, Task, PriorityLevel, 
-            isRecurring, TaskType, EstimatedHours, isFinished, isFinishedOnTime
+            isRecurring, TaskType, EstimatedHours
         } = req.body;
 
         const newTask = new Task({
@@ -61,8 +61,7 @@ const addNewTask = async (req, res) => {
             isRecurring, 
             TaskType, 
             EstimatedHours, 
-            isFinished, 
-            isFinishedOnTime
+            
         });
 
         await newTask.save();
@@ -71,6 +70,18 @@ const addNewTask = async (req, res) => {
         console.error("Error adding task:", error);
         res.status(500).json({ message: "Error creating task", error });
     }
+};
+const finishAtask = async(req,res)=>
+{
+    try
+    {
+        
+    }
+    catch
+    {
+
+    }
+
 };
 
 const addNewTask_recurring = async (req, res) => {
@@ -328,5 +339,5 @@ const getTotalAllocatedTimePrevWeek = async (req, res) => {
 // Update this to get other values also(sums)
 
 
-module.exports = { addNewTask, addNewTask_recurring,showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek };
+module.exports = { addNewTask, addNewTask_recurring,showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek,finishAtask };
 

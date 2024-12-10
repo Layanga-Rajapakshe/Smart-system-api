@@ -36,6 +36,11 @@ const TaskSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    deadLine: 
+    {
+        type: Date,
+
+    },
     isFinished: {
         type: Boolean,
         default: false
