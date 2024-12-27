@@ -9,6 +9,7 @@ const AuthRoute = require('./routes/AuthRoute');
 const RoleRoute = require('./routes/RoleRoute')
 const AttendanceRoute = require('./routes/AttendanceRoute');
 const kpiRoutes = require('./routes/KPIroutes');
+const twoWeekRoute = require('./routes/TwoWeekRoute');
 
 
 const app = express();
@@ -26,6 +27,7 @@ app.use('/api/auth', AuthRoute);
 app.use('/api/role',RoleRoute)
 app.use('/api/attendance',AttendanceRoute);
 app.use('/api/kpis', kpiRoutes);
+app.use('/api/twoWeek', twoWeekRoute);
 
 
 

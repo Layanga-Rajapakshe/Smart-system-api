@@ -1,4 +1,5 @@
-const TaskSchema = require('../models/TwoWeekModel');
+const Task = require('../models/TwoWeekModel');
+console.log(Task);
 const Holidays = require('../models/HolidayModel');
 
 const hoursAweek = async (StartingDate) => {
@@ -35,7 +36,7 @@ const hoursAweek = async (StartingDate) => {
 
         });
 
-        let HoursAweek = 8*(5-fullDayHolidays)-4*halfDayHolidays;
+        let HoursAweek = 8*(5-fullDayHolidays)-4*halfDayHolidays+4;
 
         // Return the count of full and half-day holidays
         return HoursAweek;
@@ -49,10 +50,12 @@ const addNewTask = async (req, res) => {
     try {
         const {
             UserId, StartingDate, TaskId, Task, PriorityLevel, 
-            isRecurring, TaskType, EstimatedHours
+            isRecurring, TaskType, EstimatedHours, deadLine, 
+            isFinished, isFinishedOnTime, Comment
         } = req.body;
 
-        const newTask = new Task({
+        // Use Task.create() to save the task
+        const newTask = await Task.create({
             UserId, 
             StartingDate, 
             TaskId, 
@@ -61,10 +64,12 @@ const addNewTask = async (req, res) => {
             isRecurring, 
             TaskType, 
             EstimatedHours, 
-            
+            deadLine, 
+            isFinished, 
+            isFinishedOnTime, 
+            Comment
         });
 
-        await newTask.save();
         res.status(201).json({ message: "Task created successfully", task: newTask });
     } catch (error) {
         console.error("Error adding task:", error);

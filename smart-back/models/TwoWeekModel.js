@@ -29,17 +29,15 @@ const TaskSchema = new mongoose.Schema({
     },
     TaskType: {
         type: String,
-        enum: ['Weekly', 'Daily', 'Monthly', 'Annually'], // Updated for consistent capitalization
+        enum: ['Weekly', 'Daily', 'Monthly', 'Annually'],
         default: 'Daily'
     },
     EstimatedHours: {
         type: Number,
         required: true
     },
-    deadLine: 
-    {
+    deadLine: {
         type: Date,
-
     },
     isFinished: {
         type: Boolean,
@@ -48,10 +46,9 @@ const TaskSchema = new mongoose.Schema({
     isFinishedOnTime: {
         type: Boolean
     },
-    Comment:
-    {
+    Comment: {
         type: String
     }
-});
+}, { timestamps: true }); // Add timestamps to manage createdAt and updatedAt fields
 
-module.exports = mongoose.model('TaskSchema',TaskSchema);
+module.exports = mongoose.model('Task', TaskSchema); // Correct export
