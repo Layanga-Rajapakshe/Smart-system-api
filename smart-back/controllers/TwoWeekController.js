@@ -1,5 +1,4 @@
 const Task = require('../models/TwoWeekModel');
-console.log(Task);
 const Holidays = require('../models/HolidayModel');
 
 const hoursAweek = async (StartingDate) => {
@@ -96,7 +95,7 @@ const addNewTask_recurring = async (req, res) => {
             isRecurring, TaskType, EstimatedHours, isFinished, isFinishedOnTime
         } = req.body;
 
-        const newTask = new Task({
+        await Task.create({
             UserId, 
             StartingDate, 
             TaskId, 
