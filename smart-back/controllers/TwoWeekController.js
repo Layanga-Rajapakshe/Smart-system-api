@@ -1,4 +1,4 @@
-const Task = require('../models/TwoWeekModel');
+const Tasks = require('../models/TwoWeekModel');
 const Holidays = require('../models/HolidayModel');
 
 const hoursAweek = async (StartingDate) => {
@@ -53,10 +53,28 @@ const addNewTask = async (req, res) => {
             isFinished, isFinishedOnTime, Comment
         } = req.body;
 
+        // Compute StartingDate
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Adjust to Monday
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        let computedStartingDate;
+        if (StartingDate === "thisWeek") {
+            computedStartingDate = startOfWeek;
+        } else if (StartingDate === "nextWeek") {
+            const nextWeekDate = new Date(startOfWeek);
+            nextWeekDate.setDate(nextWeekDate.getDate() + 7);
+            computedStartingDate = nextWeekDate;
+        } else {
+            return res.status(400).json({ message: "Invalid StartingDate value. Use 'thisWeek' or 'nextWeek'." });
+        }
+
         // Use Task.create() to save the task
-        const newTask = await Task.create({
+        const newTask = await Tasks.create({
             UserId, 
-            StartingDate, 
+            StartingDate: computedStartingDate, 
             TaskId, 
             Task, 
             PriorityLevel, 
@@ -75,6 +93,7 @@ const addNewTask = async (req, res) => {
         res.status(500).json({ message: "Error creating task", error });
     }
 };
+
 const finishAtask = async(req,res)=>
 {
     try
@@ -88,7 +107,7 @@ const finishAtask = async(req,res)=>
 
 };
 
-const addNewTask_recurring = async (req, res) => {
+/*const addNewTask_recurring = async (req, res) => {
     try {
         const {
             UserId, StartingDate, TaskId, Task, PriorityLevel, 
@@ -114,23 +133,33 @@ const addNewTask_recurring = async (req, res) => {
         console.error("Error adding recurring task:", error);
         res.status(500).json({ message: "Error creating recurring task", error });
     }
-};
+};*/
 
 const showThisWeek = async (req, res) => {
     try {
+
+        const { UserId } = req.body;
+
+
+    
+
+
         const today = new Date();
         const dayOfWeek = today.getDay();
         const startOfWeek = new Date(today);
+        //console.log(startOfWeek);
         startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Adjust to Monday
         startOfWeek.setHours(0, 0, 0, 0);
+        console.log(startOfWeek);
 
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6); // Move to Sunday of the same week
         endOfWeek.setHours(23, 59, 59, 999); // End of the day
 
         // Query tasks within this week's date range
-        const tasksThisWeek = await Task.find({
-            StartingDate: startOfWeek 
+        const tasksThisWeek = await Tasks.find({
+            StartingDate: startOfWeek ,
+            UserId: UserId
         });
 
         res.status(200).json({ tasks: tasksThisWeek });
@@ -142,6 +171,10 @@ const showThisWeek = async (req, res) => {
 
 const showNextWeek = async (req, res) => {
     try {
+
+        const { UserId } = req.body;
+
+
         const today = new Date();
         const dayOfWeek = today.getDay();
         const startOfThisWeek = new Date(today);
@@ -155,7 +188,8 @@ const showNextWeek = async (req, res) => {
         endOfNextWeek.setHours(23, 59, 59, 999);
 
         const tasksNextWeek = await Task.find({
-            StartingDate: startOfThisWeek});
+            StartingDate: startOfWeek ,
+            UserId: UserId});
 
         res.status(200).json({ tasks: tasksNextWeek });
     } catch (error) {
@@ -166,6 +200,7 @@ const showNextWeek = async (req, res) => {
 
 const showPrevWeek = async (req, res) => {
     try {
+        const { UserId } = req.body;
         const today = new Date();
         const dayOfWeek = today.getDay();
         const startOfThisWeek = new Date(today);
@@ -179,7 +214,8 @@ const showPrevWeek = async (req, res) => {
         endOfPrevWeek.setHours(23, 59, 59, 999);
 
         const tasksPrevWeek = await Task.find({
-            StartingDate: startOfThisWeek
+            StartingDate: startOfWeek ,
+            UserId: UserId
         });
 
         res.status(200).json({ tasks: tasksPrevWeek });

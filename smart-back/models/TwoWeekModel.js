@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const TaskSchema = new mongoose.Schema({
     UserId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: 'Employee',
         required: true
     },
@@ -11,7 +11,7 @@ const TaskSchema = new mongoose.Schema({
         required: true
     },
     TaskId: {
-        type: Number,
+        type: String,
         required: true
     },
     Task: {
@@ -19,9 +19,10 @@ const TaskSchema = new mongoose.Schema({
         required: true
     },
     PriorityLevel: {
-        type: Number,
-        required: true,
-        default: 1
+        type: String, // Changed from Number to String
+    enum: ['High', 'Medium', 'Low'], // Defined allowed values
+    required: true,
+        default: "Medium"
     },
     isRecurring: {
         type: Boolean,
@@ -51,5 +52,5 @@ const TaskSchema = new mongoose.Schema({
     }
 }, { timestamps: true }); // Add timestamps to manage createdAt and updatedAt fields
 
-module.exports = mongoose.model('Task', TaskSchema); // Correct export
-module.exports = Task;
+const Tasks= mongoose.model('Tasks', TaskSchema); // Correct export
+module.exports = Tasks;
