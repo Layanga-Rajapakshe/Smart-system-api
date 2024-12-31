@@ -12,11 +12,6 @@ const getEmployees = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
 
-        if (!hasPermission(role, 'view_employee_details')) {
-            logger.error(`Unauthorized access attempt by: ${req.user._id}`);
-            return res.status(403).json({ message: 'You do not have permission to view employees.' });
-        }
-
         // Assuming 'company' is a field in your Employee model
         const employees = await Employee.find({ company: req.user.company });
         logger.log(`Employees fetched for company: ${req.user.company}`);
@@ -60,11 +55,6 @@ const getEmployee = async (req, res) => {
 const createEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
-
-        if (!hasPermission(role, 'create_employee')) {
-            logger.error(`Unauthorized employee creation attempt by: ${req.user._id}`);
-            return res.status(403).json({ message: 'You do not have permission to create employees.' });
-        }
 
         const employee = new Employee({
             ...req.body,
@@ -164,11 +154,38 @@ const getEmployeeWithKPIs = async (req, res) => {
 };
 
 
+// Controller to get employee role
+const getEmployeeRole = async (req, res) => {
+    try {
+        const { employeeId } = req.params; // Assume employeeId is passed as a route parameter
+
+        // Find the employee and populate the role
+        const employee = await Employee.findById(employeeId).populate('role'); // Adjust the fields based on your Role model
+
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        res.status(200).json({
+            message: 'Employee role retrieved successfully',
+            role: employee.role
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+
+
+
 module.exports = {
     getEmployees,
     getEmployee,
     createEmployee,
     updateEmployee,
     deleteEmployee,
-    getEmployeeWithKPIs
+    getEmployeeWithKPIs,
+    getEmployeeRole
 };
