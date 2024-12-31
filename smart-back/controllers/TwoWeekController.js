@@ -378,6 +378,13 @@ const getTotalAllocatedTimePrevWeek = async (req, res) => {
 
 // Update this to get other values also(sums)
 
+// show a week with customized date - starting date--
+
+const showweek = async(req,res)=>
+{
+    const { UserId, StartingDate } = req.body;
+}
+
 
 module.exports = { addNewTask, addNewTask_recurring,showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek,finishAtask };
 
