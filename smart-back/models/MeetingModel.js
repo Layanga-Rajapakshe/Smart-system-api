@@ -25,6 +25,11 @@ const MeetingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
         required: true
+    }],
+    todoList: [{
+        task: { type: String, required: true }, // Task description
+        status: { type: String, enum: ["pending", "completed"], default: "pending" }, // Task status
+        spillover: { type: Boolean, default: false } // Indicates if the task is a spillover
     }]
 }, { timestamps: true });
 

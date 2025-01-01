@@ -1,6 +1,5 @@
 const Meeting = require("../models/Meeting");
 const Notification = require("../models/notification");
-const Employee = require("../models/Employee");
 
 // Helper function to send notifications to attendees
 const sendNotifications = async (attendees, meetingId, message) => {
@@ -16,46 +15,69 @@ const sendNotifications = async (attendees, meetingId, message) => {
 // Create a new meeting
 const createMeeting = async (req, res) => {
     try {
-        const { topic, dateTime, description, meetingRoomId, attendees } = req.body;
+        const { topic, dateTime, description, meetingRoomId, attendees, tasks } = req.body;
 
         if (!topic || !dateTime || !description || !meetingRoomId || !attendees || attendees.length === 0) {
-            return res.status(400).json({ message: "All fields and at least one attendee are required" });
+            return res.status(400).json({ message: "All fields and at least one attendee are required." });
         }
 
+        // Fetch the most recent meeting and extract incomplete spillover tasks
+        const latestMeeting = await Meeting.findOne().sort({ dateTime: -1 });
+        const spilloverTasks = latestMeeting
+            ? latestMeeting.tasks.filter(task => !task.completed) // Filter incomplete tasks
+            : [];
+
+        // Combine new tasks with spillover tasks
+        const allTasks = [...spilloverTasks, ...(tasks || [])];
+
+        // Create the new meeting
         const meeting = new Meeting({
             topic,
             dateTime,
             description,
             meetingRoomId,
             attendees,
+            tasks: allTasks,
         });
 
         await meeting.save();
 
-        // Send notifications to attendees
+        // Notify attendees about the new meeting
         const message = `You have been invited to a meeting: ${topic}`;
-        await sendNotifications(attendees, meeting._id, message);
+        await sendNotifications(meeting._id, attendees, message);
 
-        res.status(201).json({ message: "Meeting created successfully", meeting });
+        res.status(201).json({
+            message: "Meeting created successfully with spillover tasks.",
+            meeting,
+        });
     } catch (error) {
-        res.status(500).json({ message: "Failed to create meeting", error: error.message });
+        res.status(500).json({ message: "Failed to create meeting.", error: error.message });
     }
 };
 
-// Get all meetings
+// Get all meetings with populated attendees and meeting ID
 const getAllMeetings = async (req, res) => {
     try {
         const meetings = await Meeting.find()
-            .populate("attendees", "name email")
+            .populate("attendees", "name email") // Populates attendee details
             .sort({ dateTime: 1 });
 
-        res.status(200).json(meetings);
+        const formattedMeetings = meetings.map((meeting) => ({
+            id: meeting._id,
+            topic: meeting.topic,
+            dateTime: meeting.dateTime,
+            description: meeting.description,
+            meetingRoomId: meeting.meetingRoomId,
+            attendees: meeting.attendees,
+        }));
+
+        res.status(200).json(formattedMeetings);
     } catch (error) {
         res.status(500).json({ message: "Failed to retrieve meetings", error: error.message });
     }
 };
 
-// Get a single meeting by ID
+// Get a single meeting by ID with populated attendees and meeting ID
 const getMeetingById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -65,7 +87,14 @@ const getMeetingById = async (req, res) => {
             return res.status(404).json({ message: "Meeting not found" });
         }
 
-        res.status(200).json(meeting);
+        res.status(200).json({
+            id: meeting._id,
+            topic: meeting.topic,
+            dateTime: meeting.dateTime,
+            description: meeting.description,
+            meetingRoomId: meeting.meetingRoomId,
+            attendees: meeting.attendees,
+        });
     } catch (error) {
         res.status(500).json({ message: "Failed to retrieve meeting", error: error.message });
     }
@@ -93,7 +122,17 @@ const updateMeeting = async (req, res) => {
         Object.assign(meeting, updatedData);
         await meeting.save();
 
-        res.status(200).json({ message: "Meeting updated successfully", meeting });
+        res.status(200).json({
+            message: "Meeting updated successfully",
+            meeting: {
+                id: meeting._id,
+                topic: meeting.topic,
+                dateTime: meeting.dateTime,
+                description: meeting.description,
+                meetingRoomId: meeting.meetingRoomId,
+                attendees: meeting.attendees,
+            },
+        });
     } catch (error) {
         res.status(500).json({ message: "Failed to update meeting", error: error.message });
     }
