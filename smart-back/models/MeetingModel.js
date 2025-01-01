@@ -20,7 +20,12 @@ const MeetingSchema = new mongoose.Schema({
     discussionPoints: {
         type: String,
         default: ""
-    }
+    },
+    attendees: [{ // Array of employee IDs (attendees for the meeting)
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+        required: true
+    }]
 }, { timestamps: true });
 
 const Meeting = mongoose.model("Meeting", MeetingSchema);
