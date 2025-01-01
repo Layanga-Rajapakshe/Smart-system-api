@@ -7,8 +7,7 @@ const TaskSchema = new mongoose.Schema({
         required: true
     },
     StartingDate: {
-        type: Date,
-        required: true
+        type: Date,//required only for weekly tasks, for daily tasks and week tasks, this should be null
     },
     TaskId: {
         type: String,
@@ -28,7 +27,7 @@ const TaskSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    TaskType: {
+    TaskType: {//this should be filled if only recurring is true!!
         type: String,
         enum: ['Weekly', 'Daily', 'Monthly', 'Annually'],
         default: 'Daily'

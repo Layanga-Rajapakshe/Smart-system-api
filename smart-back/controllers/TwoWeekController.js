@@ -48,9 +48,9 @@ const hoursAweek = async (StartingDate) => {
 const addNewTask = async (req, res) => {
     try {
         const {
-            UserId, StartingDate, TaskId, Task, PriorityLevel, 
+            UserId, StartingDate/*whether 'thisWeek' or "nextWeek" or null ,drop list*/, TaskId, Task, PriorityLevel, 
             isRecurring, TaskType, EstimatedHours, deadLine, 
-            isFinished, isFinishedOnTime, Comment
+            Comment
         } = req.body;
 
         // Compute StartingDate
@@ -67,8 +67,6 @@ const addNewTask = async (req, res) => {
             const nextWeekDate = new Date(startOfWeek);
             nextWeekDate.setDate(nextWeekDate.getDate() + 7);
             computedStartingDate = nextWeekDate;
-        } else {
-            return res.status(400).json({ message: "Invalid StartingDate value. Use 'thisWeek' or 'nextWeek'." });
         }
 
         // Use Task.create() to save the task
@@ -82,8 +80,6 @@ const addNewTask = async (req, res) => {
             TaskType, 
             EstimatedHours, 
             deadLine, 
-            isFinished, 
-            isFinishedOnTime, 
             Comment
         });
 
@@ -94,18 +90,37 @@ const addNewTask = async (req, res) => {
     }
 };
 
-const finishAtask = async(req,res)=>
-{
-    try
-    {
-        
-    }
-    catch
-    {
+const finishAtask = async (req, res) => {
+    try {
+        const {
+            UserId, TaskId, StartingDate
+        } = req.body;
 
-    }
+        // Find the task using the given criteria
+        const theTask = await Tasks.findOne({
+            StartingDate: StartingDate,
+            UserId: UserId,
+            TaskId: TaskId
+        });
 
+        // Check if the task exists
+        if (!theTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        // Update the task's `isFinished` status
+        theTask.isFinished = true;
+
+        // Save the updated task
+        await theTask.save();
+
+        res.status(200).json({ message: "Task marked as finished", task: theTask });
+    } catch (error) {
+        console.error("Error finishing the task:", error);
+        res.status(500).json({ message: "Error finishing the task", error });
+    }
 };
+
 
 /*const addNewTask_recurring = async (req, res) => {
     try {
@@ -140,10 +155,6 @@ const showThisWeek = async (req, res) => {
 
         const { UserId } = req.body;
 
-
-    
-
-
         const today = new Date();
         const dayOfWeek = today.getDay();
         const startOfWeek = new Date(today);
@@ -159,7 +170,9 @@ const showThisWeek = async (req, res) => {
         // Query tasks within this week's date range
         const tasksThisWeek = await Tasks.find({
             StartingDate: startOfWeek ,
-            UserId: UserId
+            UserId: UserId,
+            TaskType:'Weekly'
+
         });
 
         res.status(200).json({ tasks: tasksThisWeek });
@@ -189,7 +202,8 @@ const showNextWeek = async (req, res) => {
 
         const tasksNextWeek = await Task.find({
             StartingDate: startOfWeek ,
-            UserId: UserId});
+            UserId: UserId,
+            TaskType:'Weekly'});
 
         res.status(200).json({ tasks: tasksNextWeek });
     } catch (error) {
@@ -213,9 +227,10 @@ const showPrevWeek = async (req, res) => {
         endOfPrevWeek.setDate(startOfPrevWeek.getDate() + 6); // Move to previous Sunday
         endOfPrevWeek.setHours(23, 59, 59, 999);
 
-        const tasksPrevWeek = await Task.find({
+        const tasksPrevWeek = await Tasks.find({
             StartingDate: startOfWeek ,
-            UserId: UserId
+            UserId: UserId,
+            TaskType:'Weekly'
         });
 
         res.status(200).json({ tasks: tasksPrevWeek });
@@ -225,14 +240,13 @@ const showPrevWeek = async (req, res) => {
     }
 };
 
-const getTotalAllocatedTimeThisWeek = async (req, res) => {
+const getTotalAllocatedTimeThisWeek = async (req, res) => { //Request using the relavant starting date(monday of the week) to fetch relavant weeks summary!
     try {
         const { UserId, StartingDate } = req.body;
 
         // Calculate Daily Total
-        const dailyTasks = await TaskSchema.find({
+        const dailyTasks = await Tasks.find({
             UserId: UserId,
-            StartingDate: StartingDate,
             TaskType: "Daily"
         });
         
@@ -242,7 +256,7 @@ const getTotalAllocatedTimeThisWeek = async (req, res) => {
         });
 
         // Calculate Weekly Total
-        const weeklyTasks = await TaskSchema.find({
+        const weeklyTasks = await Tasks.find({
             UserId: UserId,
             StartingDate: StartingDate,
             TaskType: "Weekly"
@@ -253,9 +267,8 @@ const getTotalAllocatedTimeThisWeek = async (req, res) => {
             TotalWeekly += task.EstimatedHours;
         });
 
-        const weekTasks = await TaskSchema.find({
+        const weekTasks = await Tasks.find({
             UserId: UserId,
-            StartingDate: StartingDate,
             isRecurring: false
         });
         
@@ -267,7 +280,7 @@ const getTotalAllocatedTimeThisWeek = async (req, res) => {
         let totalWeekHours = hoursAweek(StartingDate);//gives the total hours availble in this week
         let balanceHours = totalWeekHours -(TotalDaily+TotalWeekly+TotalWeek)
 
-        // Return both totals in a JSON response
+        // Return all totals in a JSON response
         return res.status(200).json({ totalWeekHours,TotalDaily, TotalWeekly,TotalWeek,balanceHours });
     } catch (error) {
         console.error(error);
@@ -275,7 +288,7 @@ const getTotalAllocatedTimeThisWeek = async (req, res) => {
     }
 };
 
-const getTotalAllocatedTimeNextWeek = async (req, res) => {
+/*const getTotalAllocatedTimeNextWeek = async (req, res) => {
     try {
         const { UserId, StartingDate } = req.body;
 
@@ -323,9 +336,9 @@ const getTotalAllocatedTimeNextWeek = async (req, res) => {
         console.error(error);
         return res.status(500).json({ error: "An error occurred while calculating totals." });
     }
-};
+};*/
 
-const getTotalAllocatedTimePrevWeek = async (req, res) => {
+/*const getTotalAllocatedTimePrevWeek = async (req, res) => {
     try {
         const { UserId, StartingDate } = req.body;
 
@@ -374,17 +387,48 @@ const getTotalAllocatedTimePrevWeek = async (req, res) => {
         console.error(error);
         return res.status(500).json({ error: "An error occurred while calculating totals." });
     }
-};
+};*/
 
 // Update this to get other values also(sums)
 
 // show a week with customized date - starting date--
 
-const showweek = async(req,res)=>
-{
-    const { UserId, StartingDate } = req.body;
-}
+const showAny_WeeklyTasks = async (req, res) => {
+    try {
+
+        const { UserId,StartingDate } = req.body;
+        // Query tasks within this week's date range
+        const tasksRelavantWeek = await Tasks.find({
+            StartingDate: StartingDate ,
+            UserId: UserId,
+        });
+
+        res.status(200).json({ tasks: tasksRelavantWeek });
+    } catch (error) {
+        console.error("Error fetching  week's tasks:", error);
+        res.status(500).json({ message: "Error fetching  week's tasks", error });
+    }
+};
+const showAny_TaskList = async (req, res) => {
+    try {
+
+        const { UserId,taskType } = req.body;
+        // Query tasks within this week's date range
+        const TasksList = await Tasks.find({
+             
+            UserId: UserId,
+            TaskType:taskType//tasktypes->Weekly,Daily,Monthly,Annully
+        });3.
+
+        res.status(200).json({ tasks: TasksList });
+    } catch (error) {
+        console.error("Error fetching  tasks:", error);
+        res.status(500).json({ message: "Error fetching  tasks", error });
+    }
+};
 
 
-module.exports = { addNewTask, addNewTask_recurring,showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek,finishAtask };
+
+
+module.exports = { showAny_WeeklyTasks,addNewTask, addNewTask_recurring,showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek,finishAtask,showAny_TaskList  };
 
