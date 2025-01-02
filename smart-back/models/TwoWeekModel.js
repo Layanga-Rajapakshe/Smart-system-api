@@ -37,17 +37,21 @@ const TaskSchema = new mongoose.Schema({
         required: true
     },
     deadLine: {
-        type: Date,
+        type: Date,// for weeekly tasks , this is a must ( make sure no null values entered from the front end)
+
     },
     isFinished: {
         type: Boolean,
-        default: false
+        default: false //IN KPI, Get count of the false for each user(past weeks, do not count this week), and use that count to evaluate each user! 
     },
     isFinishedOnTime: {
         type: Boolean
     },
     Comment: {
         type: String
+    },
+    actualHours: {
+        type: Number
     }
 }, { timestamps: true }); // Add timestamps to manage createdAt and updatedAt fields
 

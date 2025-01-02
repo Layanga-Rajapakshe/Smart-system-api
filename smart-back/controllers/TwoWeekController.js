@@ -92,15 +92,13 @@ const addNewTask = async (req, res) => {
 
 const finishAtask = async (req, res) => {
     try {
-        const {
-            UserId, TaskId, StartingDate
-        } = req.body;
+        const { UserId, TaskId, StartingDate, actualHours } = req.body;
 
         // Find the task using the given criteria
         const theTask = await Tasks.findOne({
             StartingDate: StartingDate,
             UserId: UserId,
-            TaskId: TaskId
+            TaskId: TaskId,
         });
 
         // Check if the task exists
@@ -108,12 +106,18 @@ const finishAtask = async (req, res) => {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        // Update the task's `isFinished` status
+        // Update the task's `isFinished` status and `actualHours`
         theTask.isFinished = true;
+        theTask.actualHours = actualHours;
+        // Check if the task is finished on time
+        const today = new Date();
+        theTask.isFinishedOnTime = theTask.deadLine >= today;
+        
 
         // Save the updated task
         await theTask.save();
 
+        // Respond with success
         res.status(200).json({ message: "Task marked as finished", task: theTask });
     } catch (error) {
         console.error("Error finishing the task:", error);
@@ -200,7 +204,7 @@ const showNextWeek = async (req, res) => {
         endOfNextWeek.setDate(startOfNextWeek.getDate() + 6); // Move to next Sunday
         endOfNextWeek.setHours(23, 59, 59, 999);
 
-        const tasksNextWeek = await Task.find({
+        const tasksNextWeek = await Tasks.find({
             StartingDate: startOfWeek ,
             UserId: UserId,
             TaskType:'Weekly'});
