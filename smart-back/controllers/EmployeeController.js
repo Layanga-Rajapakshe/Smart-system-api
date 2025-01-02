@@ -12,7 +12,7 @@ const getEmployees = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
 
-        // Check if the user's role ID matches the Super Admin role
+       
         if (req.user.role.toString() === '66fbb15030e37b523885f5ad') {
             // Super Admin can view all employees across all companies
             const employees = await Employee.find({});
