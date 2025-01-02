@@ -1,4 +1,5 @@
 const Employee = require('../models/EmployeeModel');
+const Role = require('../models/RoleModel');
 const logger = require('../utils/Logger');
 
 // Login controller
@@ -31,7 +32,15 @@ const login = async (req, res) => {
         });
 
         logger.log(`User logged in: ${user.email}`);
-        res.status(200).json({ message: 'Login successful' });
+
+        const role = await  Role.findById(user.role);
+
+        res.status(200).json({ 
+            id: user._id,
+            name: user.name,
+            role: role.name,
+            avatar: user?.avatar,
+        });
     } catch (error) {
         logger.error(`Login error for email ${req.body.email}: ${error.message}`);
         res.status(500).json({ message: 'Internal server error' });
