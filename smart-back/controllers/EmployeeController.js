@@ -58,7 +58,6 @@ const createEmployee = async (req, res) => {
 
         const employee = new Employee({
             ...req.body,
-            company: req.user.company,
             createdBy: req.user._id
         });
 
