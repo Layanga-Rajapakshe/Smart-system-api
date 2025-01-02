@@ -3,47 +3,57 @@ const Holidays = require('../models/HolidayModel');
 
 const hoursAweek = async (StartingDate) => {
     try {
-        const { StartingDate } = req.body;
+        // Ensure StartingDate is a valid Date object
         const startOfWeek = new Date(StartingDate);
-        const endOfWeek = new Date(StartingDate);
-        endOfWeek.setDate(startOfWeek.getDate() + 5); // Move to Saturday of the same week
+        startOfWeek.setHours(0, 0, 0, 0); // Reset time to midnight
 
-        // Find holidays between Monday to Saturday of the given week
+        // Calculate the end of the week (Saturday)
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 5); // Add 5 days to get Saturday
+
+        // Fetch holidays between Monday to Saturday of the given week
         const holidaysInWeek = await Holidays.find({
             date: {
                 $gte: startOfWeek,
-                $lte: endOfWeek
-            }
+                $lte: endOfWeek,
+            },
         });
 
         let fullDayHolidays = 0;
         let halfDayHolidays = 0;
 
-        // Iterate through holidays to classify them as full or half-day
-        holidaysInWeek.forEach(holiday => {
+        // Classify holidays as full-day (Monday–Friday) or half-day (Saturday)
+        holidaysInWeek.forEach((holiday) => {
             const holidayDate = new Date(holiday.date);
             const dayOfWeek = holidayDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
             if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-                // Monday to Friday - Full day holiday
+                // Full-day holiday: Monday to Friday
                 fullDayHolidays++;
             } else if (dayOfWeek === 6) {
-              
+                // Half-day holiday: Saturday
                 halfDayHolidays++;
             }
-            //if there are leaves, add a function here to calculate leave hours also
 
+            // Optional: Add a custom function to calculate leave hours, if needed
+            // Example: calculateLeaveHours(holiday);
         });
 
-        let HoursAweek = 8*(5-fullDayHolidays)-4*halfDayHolidays+4;
+        // Calculate total working hours for the week
+        const HoursAweek = 8 * (5 - fullDayHolidays) - 4 * halfDayHolidays + 4;
 
-        // Return the count of full and half-day holidays
-        return HoursAweek;
+        // Return the calculated working hours
+        return {
+            HoursAweek,
+            fullDayHolidays,
+            halfDayHolidays,
+        };
     } catch (error) {
-        console.error('error in calculating holidays in the week',error);
-        throw error;
+        console.error("Error in calculating holidays in the week:", error);
+        throw error; // Rethrow the error for the calling function to handle
     }
 };
+
 
 const addNewTask = async (req, res) => {
     try {
@@ -93,12 +103,23 @@ const addNewTask = async (req, res) => {
 const finishAtask = async (req, res) => {
     try {
         const { UserId, TaskId, StartingDate, actualHours } = req.body;
+        const startOfWeek = new Date(StartingDate);
+        startOfWeek.setHours(0, 0, 0, 0); // Reset time to midnight
 
-        // Find the task using the given criteria
-        const theTask = await Tasks.findOne({
-            StartingDate: StartingDate,
-            UserId: UserId,
-            TaskId: TaskId,
+        // Calculate the end of the week (Saturday)
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 5); // Add 5 days to get Saturday
+
+        // Fetch holidays between Monday to Saturday of the given week
+        const theTask = await Holidays.find({
+            date: {
+                $gte: startOfWeek,
+                $lte: endOfWeek,
+            },
+            UserId:UserId,
+            TaskId:TaskId
+
+
         });
 
         // Check if the task exists
@@ -232,7 +253,7 @@ const showPrevWeek = async (req, res) => {
         endOfPrevWeek.setHours(23, 59, 59, 999);
 
         const tasksPrevWeek = await Tasks.find({
-            StartingDate: startOfWeek ,
+            StartingDate: startOfPrevWeek ,
             UserId: UserId,
             TaskType:'Weekly'
         });
@@ -434,5 +455,5 @@ const showAny_TaskList = async (req, res) => {
 
 
 
-module.exports = { showAny_WeeklyTasks,addNewTask, addNewTask_recurring,showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek,finishAtask,showAny_TaskList  };
+module.exports = { showAny_WeeklyTasks,addNewTask, /*addNewTask_recurring,*/showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,/*getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek,*/finishAtask,showAny_TaskList  };
 
