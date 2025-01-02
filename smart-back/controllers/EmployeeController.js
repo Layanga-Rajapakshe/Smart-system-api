@@ -12,7 +12,15 @@ const getEmployees = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
 
-        // Assuming 'company' is a field in your Employee model
+       
+        if (req.user.role.toString() === '66fbb15030e37b523885f5ad') {
+            // Super Admin can view all employees across all companies
+            const employees = await Employee.find({});
+            logger.log(`Super Admin accessed all employee details.`);
+            return res.status(200).json(employees);
+        }
+
+        // For other roles, restrict to employees within the same company
         const employees = await Employee.find({ company: req.user.company });
         logger.log(`Employees fetched for company: ${req.user.company}`);
         res.status(200).json(employees);
@@ -21,6 +29,7 @@ const getEmployees = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 const getEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);

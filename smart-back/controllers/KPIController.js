@@ -5,11 +5,11 @@ const logger = require('../utils/Logger');
 // Create KPI
 const createKPI = async (req, res) => {
     try {
-        const { employeeId, attitude, habits, skills, performance, knowledge, notes } = req.body;
-        
+        const { employeeId, sections, notes, month } = req.body;
+
         // Verify that the current user is the supervisor of the employee
         const employee = await Employee.findById(employeeId).populate('supervisor');
-        
+
         if (!employee || employee.supervisor.toString() !== req.user._id.toString()) {
             logger.error(`Unauthorized KPI creation attempt by: ${req.user._id}`);
             return res.status(403).json({ message: 'You do not have permission to rate this employee.' });
@@ -18,12 +18,9 @@ const createKPI = async (req, res) => {
         const kpi = new KPI({
             employee: employeeId,
             supervisor: req.user._id,
-            attitude,
-            habits,
-            skills,
-            performance,
-            knowledge,
-            notes
+            sections, // Dynamic sections with parameters
+            notes,
+            month,
         });
 
         await kpi.save();
@@ -39,9 +36,11 @@ const createKPI = async (req, res) => {
 const getEmployeeKPIs = async (req, res) => {
     try {
         const { employeeId } = req.params;
-        const kpis = await KPI.find({ employee: employeeId }).populate('supervisor', 'name email');
-        
-        if (!kpis) {
+
+        const kpis = await KPI.find({ employee: employeeId })
+            .populate('supervisor', 'name email');
+
+        if (!kpis || kpis.length === 0) {
             logger.error(`KPIs not found for employee: ${employeeId}`);
             return res.status(404).json({ message: `KPIs not found for employee with id ${employeeId}` });
         }
@@ -57,24 +56,30 @@ const getEmployeeKPIs = async (req, res) => {
 const updateKPI = async (req, res) => {
     try {
         const { id } = req.params;
-        const { attitude, habits, skills, performance, knowledge, notes } = req.body;
+        const { sections, notes } = req.body;
 
         const kpi = await KPI.findById(id);
-        
+
         if (!kpi) {
+            logger.error(`KPI not found: ${id}`);
             return res.status(404).json({ message: 'KPI not found' });
         }
 
         // Only allow the supervisor who created the KPI to update it
         if (kpi.supervisor.toString() !== req.user._id.toString()) {
+            logger.error(`Unauthorized KPI update attempt by: ${req.user._id}`);
             return res.status(403).json({ message: 'You do not have permission to update this KPI.' });
         }
 
-        kpi.attitude = attitude ?? kpi.attitude;
-        kpi.habits = habits ?? kpi.habits;
-        kpi.skills = skills ?? kpi.skills;
-        kpi.performance = performance ?? kpi.performance;
-        kpi.knowledge = knowledge ?? kpi.knowledge;
+        // Update sections dynamically
+        if (sections) {
+            for (const section in sections) {
+                if (kpi.sections[section]) {
+                    kpi.sections[section] = sections[section];
+                }
+            }
+        }
+
         kpi.notes = notes ?? kpi.notes;
 
         await kpi.save();
@@ -86,8 +91,36 @@ const updateKPI = async (req, res) => {
     }
 };
 
+// Delete a specific KPI record
+const deleteKPI = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const kpi = await KPI.findById(id);
+
+        if (!kpi) {
+            logger.error(`KPI not found: ${id}`);
+            return res.status(404).json({ message: 'KPI not found' });
+        }
+
+        // Only allow the supervisor who created the KPI to delete it
+        if (kpi.supervisor.toString() !== req.user._id.toString()) {
+            logger.error(`Unauthorized KPI deletion attempt by: ${req.user._id}`);
+            return res.status(403).json({ message: 'You do not have permission to delete this KPI.' });
+        }
+
+        await kpi.remove();
+        logger.log(`KPI deleted: ${id}`);
+        res.status(200).json({ message: 'KPI deleted successfully.' });
+    } catch (error) {
+        logger.error(`Failed to delete KPI: ${error.message}`);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createKPI,
     getEmployeeKPIs,
-    updateKPI
+    updateKPI,
+    deleteKPI,
 };

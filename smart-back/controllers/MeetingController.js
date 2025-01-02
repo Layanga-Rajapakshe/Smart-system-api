@@ -8,10 +8,8 @@ const sendNotifications = async (attendees, meetingId, message) => {
         message,
         meetingId,
     }));
-
     await Notification.insertMany(notifications);
 };
-
 // Create a new meeting
 const createMeeting = async (req, res) => {
     try {

@@ -11,7 +11,7 @@ router.get('/:id', authenticateUser, getEmployee);
 router.post('/',authenticateUser,checkPermissionMiddleware('create_employee'), createEmployee);
 router.put('/:id', authenticateUser, checkPermissionMiddleware('update_employee'), updateEmployee);
 router.delete('/:id', authenticateUser, checkPermissionMiddleware('delete_employee'), deleteEmployee);
-router.get('/kpi',authenticateUser,getEmployeeWithKPIs)
+router.get('/kpi',authenticateUser,getEmployeeWithKPIs);
 router.get('/:employeeId/role', getEmployeeRole);
 
 module.exports = router;
