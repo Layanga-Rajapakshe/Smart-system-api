@@ -16,6 +16,7 @@ const RoleRoute = require('./routes/RoleRoute');
 const AttendanceRoute = require('./routes/AttendanceRoute');
 const KPIRoutes = require('./routes/KPIroutes');
 const NotificationRoute = require('./routes/NotificationRoute');
+const TwoWeekRoute = require('./routes/TwoWeekRoute');
 
 const app = express();
 const server = http.createServer(app); // HTTP server for Express and Socket.IO
@@ -45,6 +46,7 @@ app.use('/api/role', RoleRoute);
 app.use('/api/attendance', AttendanceRoute);
 app.use('/api/kpis', KPIRoutes);
 app.use('/api/notifications', NotificationRoute);
+app.use('/api/twoweek',TwoWeekRoute);
 
 // Default Route
 app.get('/', (req, res) => {
