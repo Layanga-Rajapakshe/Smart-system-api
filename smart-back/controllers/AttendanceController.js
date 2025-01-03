@@ -377,7 +377,7 @@ const addHolidays = async (req, res) => {
         const sheetName = workbook.SheetNames[0]; // First sheet
         const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-        // Log the raw sheet data and worksheet to see if it's being parsed correctly
+        
         //console.log('Raw Sheet Data:', workbook.Sheets[sheetName]);
         //console.log('Worksheet:', worksheet);
 
@@ -516,10 +516,6 @@ const removeHoliday = async (req, res) => {
         });
     }
 };
-
-
-
-
 module.exports=
 {
     UploadExcellSheet,
