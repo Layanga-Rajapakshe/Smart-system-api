@@ -5,7 +5,7 @@ const logger = require('../utils/Logger');
 // Create KPI
 const createKPI = async (req, res) => {
     try {
-        const { employeeId, sections, notes, month } = req.body;
+        const { employeeId, notes, month, comment, sectionId } = req.body;
 
         // Verify that the current user is the supervisor of the employee
         const employee = await Employee.findById(employeeId).populate('supervisor');
@@ -15,12 +15,34 @@ const createKPI = async (req, res) => {
             return res.status(403).json({ message: 'You do not have permission to rate this employee.' });
         }
 
+        // Fetch the referenced KPIParameter
+        const kpiParameter = await KPIParameter.findById(sectionId);
+        if (!kpiParameter) {
+            return res.status(404).json({ message: 'KPI parameters not found.' });
+        }
+
+        // Modify values dynamically in the referenced schema
+        for (const sectionName in kpiParameter.sections) {
+            const parameters = kpiParameter.sections[sectionName];
+            parameters.forEach((param) => {
+                if (param.weight && param.value) {
+                    // Example logic: Adjust the `value` based on the `weight`
+                    param.value = param.value * param.weight; // Adjusting value dynamically
+                }
+            });
+        }
+
+        // Save the modified KPIParameter
+        await kpiParameter.save();
+
+        // Create KPI document with the modified KPIParameter
         const kpi = new KPI({
             employee: employeeId,
             supervisor: req.user._id,
-            sections, // Dynamic sections with parameters
+            section: kpiParameter._id, // Reference to the modified KPIParameter
             notes,
             month,
+            comment,
         });
 
         await kpi.save();
