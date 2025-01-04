@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { getAllMeetings, getMeetingById, createMeeting, updateMeeting, deleteMeeting, addDiscussionPoints } = require("../controllers/MeetingController");
-
+const checkPermissionMiddleware = require('../middleware/CheckPermission');
 // Get all meetings
 router.get("/", getAllMeetings);
 
@@ -9,7 +9,7 @@ router.get("/", getAllMeetings);
 router.get("/:id", getMeetingById);
 
 // Create a new meeting
-router.post("/", createMeeting);
+router.post("/",checkPermissionMiddleware('create_meeting'), createMeeting);
 
 // Update a meeting
 router.put("/:id", updateMeeting);

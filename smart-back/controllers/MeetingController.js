@@ -13,20 +13,22 @@ const sendNotifications = async (attendees, meetingId, message) => {
 // Create a new meeting
 const createMeeting = async (req, res) => {
     try {
-        const { topic, dateTime, description, meetingRoomId, attendees, tasks } = req.body;
+        const { topic, dateTime, description, meetingRoomId, attendees, todoList, ProjectId } = req.body;
 
-        if (!topic || !dateTime || !description || !meetingRoomId || !attendees || attendees.length === 0) {
-            return res.status(400).json({ message: "All fields and at least one attendee are required." });
+        if (!topic || !dateTime || !description || !meetingRoomId || !attendees || attendees.length === 0 || !ProjectId) {
+            return res.status(400).json({ message: "All fields, a valid ProjectId, and at least one attendee are required." });
         }
 
-        // Fetch the most recent meeting and extract incomplete spillover tasks
-        const latestMeeting = await Meeting.findOne().sort({ dateTime: -1 });
+        // Fetch the most recent meeting for the same project
+        const latestMeeting = await Meeting.findOne({ ProjectId }).sort({ dateTime: -1 });
+
+        // Extract spillover tasks (incomplete tasks from the same project)
         const spilloverTasks = latestMeeting
-            ? latestMeeting.tasks.filter(task => !task.completed) // Filter incomplete tasks
+            ? latestMeeting.todoList.filter(task => task.status !== "completed") // Filter incomplete tasks
             : [];
 
         // Combine new tasks with spillover tasks
-        const allTasks = [...spilloverTasks, ...(tasks || [])];
+        const allTasks = [...spilloverTasks, ...(todoList || [])];
 
         // Create the new meeting
         const meeting = new Meeting({
@@ -35,14 +37,15 @@ const createMeeting = async (req, res) => {
             description,
             meetingRoomId,
             attendees,
-            tasks: allTasks,
+            todoList: allTasks,
+            ProjectId,
         });
 
         await meeting.save();
 
         // Notify attendees about the new meeting
         const message = `You have been invited to a meeting: ${topic}`;
-        await sendNotifications(meeting._id, attendees, message);
+        await sendNotifications(attendees, meeting._id, message);
 
         res.status(201).json({
             message: "Meeting created successfully with spillover tasks.",
