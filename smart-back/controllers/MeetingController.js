@@ -1,4 +1,4 @@
-const Meeting = require("../models/Meeting");
+const Meeting = require("../models/MeetingModel");
 const Notification = require("../models/notification");
 
 // Helper function to send notifications to attendees
@@ -13,9 +13,9 @@ const sendNotifications = async (attendees, meetingId, message) => {
 // Create a new meeting
 const createMeeting = async (req, res) => {
     try {
-        const { topic, dateTime, description, meetingRoomId, attendees, todoList, ProjectId } = req.body;
+        const { topic, dateTime, description, meetingRoomId, attendees, todoList, ProjectId,ProjectManager } = req.body;
 
-        if (!topic || !dateTime || !description || !meetingRoomId || !attendees || attendees.length === 0 || !ProjectId) {
+        if (!topic || !dateTime || !description  || !attendees || attendees.length === 0 || !ProjectId) {
             return res.status(400).json({ message: "All fields, a valid ProjectId, and at least one attendee are required." });
         }
 
@@ -33,6 +33,7 @@ const createMeeting = async (req, res) => {
         // Create the new meeting
         const meeting = new Meeting({
             topic,
+            ProjectManager,
             dateTime,
             description,
             meetingRoomId,

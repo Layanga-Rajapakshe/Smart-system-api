@@ -20,7 +20,6 @@ const getEmployees = async (req, res) => {
             return res.status(200).json(employees);
         }
 
-        // For other roles, restrict to employees within the same company
         const employees = await Employee.find({ company: req.user.company });
         logger.log(`Employees fetched for company: ${req.user.company}`);
         res.status(200).json(employees);

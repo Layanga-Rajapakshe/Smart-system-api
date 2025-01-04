@@ -38,6 +38,9 @@ const kpiSchema = new mongoose.Schema({
             value: { type: Number, min: 0, max: 10, required: true }
         }]
     },
+    comment: {
+        type: String
+    },
     month: {
         type: String,
         required: true,

@@ -9,7 +9,7 @@ router.get("/", getAllMeetings);
 router.get("/:id", getMeetingById);
 
 // Create a new meeting
-router.post("/",checkPermissionMiddleware('create_meeting'), createMeeting);
+router.post("/", createMeeting);
 
 // Update a meeting
 router.put("/:id", updateMeeting);
