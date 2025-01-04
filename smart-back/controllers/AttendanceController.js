@@ -358,6 +358,47 @@ const reShowAttendanceRecords = async (req, res) => {
     }
 };
 
+const editAttendanceRecord = async (req, res) => {
+    try {
+        const { userId, Date, In, Out } = req.body;
+
+        // Find and update the attendance record
+        const updatedRecord = await Attendance.findOneAndUpdate(
+            { UserId: userId, Date: Date }, // Match based on userId and Date
+            {
+                $set: {
+                    In: In,
+                    Out: Out,
+                },
+            },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedRecord) {
+            // If no record is found
+            return res.status(404).json({
+                success: false,
+                message: "Attendance record not found",
+            });
+        }
+
+        // Successful update
+        res.status(200).json({
+            success: true,
+            message: "Attendance record updated successfully",
+            data: updatedRecord,
+        });
+    } catch (error) {
+        // Handle errors
+        res.status(500).json({
+            success: false,
+            message: "An error occurred while updating the attendance record",
+            error: error.message,
+        });
+    }
+};
+
+
 
 
 
@@ -526,7 +567,8 @@ module.exports=
     removeHoliday,
     getHoliday,
     upload,
-    getHolidays
+    getHolidays,
+    editAttendanceRecord
 
 
 }
