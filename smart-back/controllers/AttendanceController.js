@@ -314,7 +314,7 @@ const processAttendanceData = async (parsedDate, UserId) => {
 
 const reShowAttendanceRecords = async (req, res) => {
     try {
-        const { userId, month } = req.params;
+        const { userId, month } = req.body;
 
         // Parse year and month
         const [year, monthNum] = month.split('-').map(Number);
@@ -332,9 +332,9 @@ const reShowAttendanceRecords = async (req, res) => {
         endDate = new Date(year, monthNum - 1, 21);
 
         // Log for debugging
-        console.log('User ID:', userId);
-        console.log('Start Date:', startDate);
-        console.log('End Date:', endDate);
+        //console.log('User ID:', userId);
+        //console.log('Start Date:', startDate);
+        //console.log('End Date:', endDate);
 
         // Test fetching without UserId filter
         const attendanceRecords = await Attendance.find({
@@ -345,7 +345,7 @@ const reShowAttendanceRecords = async (req, res) => {
             }
         });
 
-        console.log('Attendance Records:', attendanceRecords); // Log fetched records
+        //console.log('Attendance Records:', attendanceRecords); // Log fetched records
 
         if (!attendanceRecords || attendanceRecords.length === 0) {
             return res.status(404).json({ message: 'No attendance records found' });
@@ -357,6 +357,55 @@ const reShowAttendanceRecords = async (req, res) => {
         res.status(500).json({ message: 'Error fetching attendance records', error });
     }
 };
+
+const editAttendanceRecord = async (req, res) => {
+    try {
+        const { userId, date, In, Out } = req.body;
+        const dateStart= new Date(date);
+        dateStart.setUTCHours(0, 0, 0, 0);
+        const dateEnd = new Date(date);
+        dateEnd.setUTCHours(23, 59, 59, 999);
+
+        // Find and update the attendance record
+        const updatedRecord = await Attendance.findOneAndUpdate(
+            { UserId: userId,
+                Date: {
+                    $gte: dateStart,
+                    $lt: dateEnd
+                } }, // Match based on userId and Date
+            {
+                $set: {
+                    In: In,
+                    Out: Out,
+                },
+            },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedRecord) {
+            // If no record is found
+            return res.status(404).json({
+                success: false,
+                message: "Attendance record not found",
+            });
+        }
+
+        // Successful update
+        res.status(200).json({
+            success: true,
+            message: "Attendance record updated successfully",
+            data: updatedRecord,
+        });
+    } catch (error) {
+        // Handle errors
+        res.status(500).json({
+            success: false,
+            message: "An error occurred while updating the attendance record",
+            error: error.message,
+        });
+    }
+};
+
 
 
 
@@ -526,7 +575,8 @@ module.exports=
     removeHoliday,
     getHoliday,
     upload,
-    getHolidays
+    getHolidays,
+    editAttendanceRecord
 
 
 }
