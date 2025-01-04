@@ -422,13 +422,21 @@ const showAny_WeeklyTasks = async (req, res) => {
     try {
 
         const { UserId,StartingDate } = req.body;
+        const dateStart= new Date(StartingDate);
+        dateStart.setUTCHours(0, 0, 0, 0);
+        const dateEnd = new Date(StartingDate);
+        dateEnd.setUTCHours(23, 59, 59, 999);
         // Query tasks within this week's date range
         const tasksRelavantWeek = await Tasks.find({
-            StartingDate: StartingDate ,
             UserId: UserId,
+            StartingDate: {
+                $gte: dateStart,
+                $lt: dateEnd },
+            isRecurring:true
+            
         });
 
-        res.status(200).json({ tasks: tasksRelavantWeek });
+        res.status(200).json({ Tasks: tasksRelavantWeek });
     } catch (error) {
         console.error("Error fetching  week's tasks:", error);
         res.status(500).json({ message: "Error fetching  week's tasks", error });
@@ -438,6 +446,7 @@ const showAny_TaskList = async (req, res) => {
     try {
 
         const { UserId,taskType } = req.body;
+        
         // Query tasks within this week's date range
         const TasksList = await Tasks.find({
              
