@@ -172,7 +172,7 @@ const UploadExcellSheet = async (req, res) => {
     } catch (error) {
         console.error('Error uploading attendance data:', error);
         res.status(500).json({ message: 'Error uploading attendance data', error });
-    }
+    }   
 };
 
 const addSalMonth = async (req, res) => {// this function should be called before the upload is called,use drop down to select year and month ,eg - 2024-02
