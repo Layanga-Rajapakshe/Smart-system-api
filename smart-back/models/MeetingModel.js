@@ -9,6 +9,15 @@ const MeetingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    ProjectId: {
+        type: Number,
+        required: true
+    },
+    ProjectManager: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+        required: true
+    },
     description: {
         type: String,
         required: true
@@ -28,6 +37,11 @@ const MeetingSchema = new mongoose.Schema({
     }],
     todoList: [{
         task: { type: String, required: true }, // Task description
+        assignedTo: { // Employee assigned to the task
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee",
+            required: true
+        },
         status: { type: String, enum: ["pending", "completed"], default: "pending" }, // Task status
         spillover: { type: Boolean, default: false } // Indicates if the task is a spillover
     }]
