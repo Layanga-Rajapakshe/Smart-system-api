@@ -10,6 +10,6 @@ router.delete('/deleteholiday/:date', removeHoliday);
 router.get('/getholiday/:date',getHoliday);
 router.get('/getholidays/:year',getHolidays);
 router.post('/addsalmonth/:month',addSalMonth);
-router.get('/getattendancedetails',reShowAttendanceRecords);
+router.get('/getattendancedetails/:userId/:month',reShowAttendanceRecords);
 router.put('/editAttendanceRec',editAttendanceRecord);
 module.exports = router;
