@@ -98,7 +98,7 @@ const updateEmployee = async (req, res) => {
                 logger.error(`Employee not found with id: ${id}`);
                 return res.status(404).json({ message: `Employee not found with id ${id}` });
             }
-            logger.log(`Super Admin updated employee details for: ${id}`);
+            logger.log(`Super Admin updated employee details for: ${updatedEmployee.name}`);
             return res.status(200).json(updatedEmployee);
         }
 
@@ -114,6 +114,9 @@ const updateEmployee = async (req, res) => {
             logger.error(`Unauthorized access. Employee does not belong to the same company.`);
             return res.status(403).json({ message: 'Employee does not belong to your company.' });
         }
+
+        // Log the employee data before update
+        logger.log(`Employee before update: ${JSON.stringify(employee)}`);
 
         // Allow users to update their own details without 'update_employee' permission
         if (userId.toString() === id) {
@@ -134,15 +137,17 @@ const updateEmployee = async (req, res) => {
         }
 
         // Save the updated employee
-        await employee.save();
-        logger.log(`Employee updated successfully: ${employee._id}`);
-        res.status(200).json(employee);
+        const updatedEmployee = await employee.save();
+
+        // Log the updated employee data
+        logger.log(`Employee after update: ${JSON.stringify(updatedEmployee)}`);
+        
+        res.status(200).json(updatedEmployee);
     } catch (error) {
         logger.error(`Failed to update employee: ${error.message}`);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-
 
 const deleteEmployee = async (req, res) => {
     try {
@@ -168,7 +173,7 @@ const deleteEmployee = async (req, res) => {
         }
 
         await employee.remove();
-        logger.log(`Employee deleted: ${employee._id}`);
+        
         res.status(200).json({ message: 'Employee deleted successfully' });
     } catch (error) {
         logger.error(`Failed to delete employee: ${error.message}`);
