@@ -87,47 +87,77 @@ const createEmployee = async (req, res) => {
 
 const updateEmployee = async (req, res) => {
     try {
-        const role = await Role.findById(req.user.role);
         const { id } = req.params;
+        const { _id: userId, role: userRole, company: userCompany } = req.user;
+        const role = await Role.findById(userRole);
 
-        // Allow users to update their own details even without 'update_employee' permission
-        if (req.user._id.toString() !== id && !hasPermission(role, 'update_employee')) {
-            logger.error(`Unauthorized employee update attempt by: ${req.user._id}`);
-            return res.status(403).json({ message: 'You do not have permission to update employees.' });
+        // Super Admin logic
+        if (userRole.toString() === '66fbb15030e37b523885f5ad') {
+            const updatedEmployee = await Employee.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+            if (!updatedEmployee) {
+                logger.error(`Employee not found with id: ${id}`);
+                return res.status(404).json({ message: `Employee not found with id ${id}` });
+            }
+            logger.log(`Super Admin updated employee details for: ${updatedEmployee.name}`);
+            return res.status(200).json(updatedEmployee);
         }
 
+        // Check if the employee exists
         const employee = await Employee.findById(id);
-
-        if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
-            logger.error(`Employee not found or does not belong to the company: ${id}`);
+        if (!employee) {
+            logger.error(`Employee not found with id: ${id}`);
             return res.status(404).json({ message: `Employee not found with id ${id}` });
         }
 
-        // Allow only specific fields to be updated if the employee is updating their own details
-        if (req.user._id.toString() === id) {
-            const allowedFields = ['name', 'email', 'birthday', 'avatar','password']; // example fields users can update
+        // Check company association
+        if (employee.company && employee.company.toString() !== userCompany.toString()) {
+            logger.error(`Unauthorized access. Employee does not belong to the same company.`);
+            return res.status(403).json({ message: 'Employee does not belong to your company.' });
+        }
+
+        // Log the employee data before update
+        logger.log(`Employee before update: ${JSON.stringify(employee)}`);
+
+        // Allow users to update their own details without 'update_employee' permission
+        if (userId.toString() === id) {
+            const allowedFields = ['name', 'email', 'birthday', 'avatar', 'password']; // Fields the employee can update
             Object.keys(req.body).forEach(field => {
                 if (allowedFields.includes(field)) {
                     employee[field] = req.body[field];
                 }
             });
         } else {
+            // Check if the user has the 'update_employee' permission
+            if (!hasPermission(role, 'update_employee')) {
+                logger.error(`Unauthorized update attempt by: ${userId}`);
+                return res.status(403).json({ message: 'You do not have permission to update employees.' });
+            }
+            // Update all fields for authorized roles
             Object.assign(employee, req.body);
         }
 
-        await employee.save();
-        logger.log(`Employee updated: ${employee._id}`);
-        res.status(200).json(employee);
+        // Save the updated employee
+        const updatedEmployee = await employee.save();
+
+        // Log the updated employee data
+        logger.log(`Employee after update: ${JSON.stringify(updatedEmployee)}`);
+        
+        res.status(200).json(updatedEmployee);
     } catch (error) {
         logger.error(`Failed to update employee: ${error.message}`);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
-
 
 const deleteEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
+        if (req.user.role.toString() === '66fbb15030e37b523885f5ad') {
+            // Super Admin can view all employees across all companies
+            const employees = await Employee.findByIdAndDelete(id);
+            logger.log(`Super Admin accessed all employee details.`);
+            return res.status(200).json(employees);
+        }
 
         if (!hasPermission(role, 'delete_employee')) {
             logger.error(`Unauthorized employee deletion attempt by: ${req.user._id}`);
@@ -143,7 +173,7 @@ const deleteEmployee = async (req, res) => {
         }
 
         await employee.remove();
-        logger.log(`Employee deleted: ${employee._id}`);
+        
         res.status(200).json({ message: 'Employee deleted successfully' });
     } catch (error) {
         logger.error(`Failed to delete employee: ${error.message}`);

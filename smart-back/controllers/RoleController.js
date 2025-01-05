@@ -107,6 +107,25 @@ const updateRoleById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// Get a role by ID
+const getRoleById = async (req, res) => {
+    try {
+        const { roleId } = req.params;
+
+        // Find role by ID
+        const role = await Role.findById(roleId);
+        if (!role) {
+            logger.error(`Role not found with ID: ${roleId}`);
+            return res.status(404).json({ message: 'Role not found' });
+        }
+
+        res.status(200).json(role);
+    } catch (error) {
+        logger.error(`Failed to fetch role by ID: ${error.message}`);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 
 
@@ -115,5 +134,6 @@ module.exports = {
     assignRoleToEmployee,
     getRoles,
     getRolesByPermission,
-    updateRoleById
+    updateRoleById,
+    getRoleById
 };
