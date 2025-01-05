@@ -33,8 +33,14 @@ const getEmployee = async (req, res) => {
     try {
         const role = await Role.findById(req.user.role);
         const { id } = req.params;
+        if (req.user.role.toString() === '66fbb15030e37b523885f5ad') {
+            const employees = await Employee.findById(id);
+            logger.log(`Super Admin accessed all employee details.`);
+            return res.status(200).json(employees);
+        }
+
         
-        // Find the employee and populate the supervisor field
+        
         const employee = await Employee.findById(id).populate('supervisor');
 
         if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
