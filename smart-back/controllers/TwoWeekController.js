@@ -445,12 +445,12 @@ const showAny_WeeklyTasks = async (req, res) => {
 const showAny_TaskList = async (req, res) => {
     try {
 
-        const { UserId,taskType } = req.body;
+        const { userId,taskType } = req.params;
         
         // Query tasks within this week's date range
         const TasksList = await Tasks.find({
              
-            UserId: UserId,
+            UserId: userId,
             TaskType:taskType//tasktypes->Weekly,Daily,Monthly,Annully
         });3.
 

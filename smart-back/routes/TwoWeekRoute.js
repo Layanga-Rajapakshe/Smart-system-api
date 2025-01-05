@@ -13,7 +13,7 @@ router.get('/nextweek',showNextWeek);
 router.get('/getallocatedtime',getTotalAllocatedTimeThisWeek);
 router.post('/finsishatask',finishAtask);
 router.get('/weeklytasks',showAny_WeeklyTasks);
-router.get('/showrecurringtasks',showAny_TaskList);
+router.get('/showrecurringtasks/:userId/:taskType',showAny_TaskList);
 
 
 

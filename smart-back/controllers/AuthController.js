@@ -40,6 +40,7 @@ const login = async (req, res) => {
             name: user.name,
             role: role.name,
             avatar: user?.avatar,
+            userId: user.userId,
         });
     } catch (error) {
         logger.error(`Login error for email ${req.body.email}: ${error.message}`);
