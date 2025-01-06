@@ -178,7 +178,7 @@ const finishAtask = async (req, res) => {
 const showThisWeek = async (req, res) => {
     try {
 
-        const { UserId } = req.body;
+        const { UserId } = req.params;
 
         const today = new Date();
         const dayOfWeek = today.getDay();
@@ -210,7 +210,7 @@ const showThisWeek = async (req, res) => {
 const showNextWeek = async (req, res) => {
     try {
 
-        const { UserId } = req.body;
+        const { UserId } = req.params;
 
 
         const today = new Date();
@@ -226,7 +226,7 @@ const showNextWeek = async (req, res) => {
         endOfNextWeek.setHours(23, 59, 59, 999);
 
         const tasksNextWeek = await Tasks.find({
-            StartingDate: startOfWeek ,
+            StartingDate: startOfThisWeek ,
             UserId: UserId,
             TaskType:'Weekly'});
 
@@ -239,7 +239,7 @@ const showNextWeek = async (req, res) => {
 
 const showPrevWeek = async (req, res) => {
     try {
-        const { UserId } = req.body;
+        const { UserId } = req.params;
         const today = new Date();
         const dayOfWeek = today.getDay();
         const startOfThisWeek = new Date(today);
@@ -446,6 +446,8 @@ const showAny_TaskList = async (req, res) => {
     try {
 
         const { userId,taskType } = req.params;
+        console.log(userId);
+        console.log(taskType);
         
         // Query tasks within this week's date range
         const TasksList = await Tasks.find({

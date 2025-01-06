@@ -7,9 +7,9 @@ const authenticateUser = require('../middleware/AuthenticateAttendance');
 
 
 router.post('/addnewtask', addNewTask);
-router.get('/thisweek',showThisWeek);
-router.get('/prevweek',showPrevWeek);
-router.get('/nextweek',showNextWeek);
+router.get('/thisweek/:userId',showThisWeek);
+router.get('/prevweek/:userId',showPrevWeek);
+router.get('/nextweek/:userId',showNextWeek);
 router.get('/getallocatedtime',getTotalAllocatedTimeThisWeek);
 router.post('/finsishatask',finishAtask);
 router.get('/weeklytasks',showAny_WeeklyTasks);
