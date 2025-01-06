@@ -315,6 +315,8 @@ const processAttendanceData = async (parsedDate, UserId) => {
 const reShowAttendanceRecords = async (req, res) => {
     try {
         const { userId, month } = req.params;
+        console.log('User ID:', userId);
+        console.log('Month:', month);
 
         // Parse year and month
         const [year, monthNum] = month.split('-').map(Number);
