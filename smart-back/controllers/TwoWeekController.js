@@ -196,8 +196,7 @@ const showThisWeek = async (req, res) => {
         const tasksThisWeek = await Tasks.find({
             StartingDate: startOfWeek ,
             UserId: UserId,
-            TaskType:'Weekly'
-
+            isRecurring:false
         });
 
         res.status(200).json({ tasks: tasksThisWeek });
@@ -228,7 +227,7 @@ const showNextWeek = async (req, res) => {
         const tasksNextWeek = await Tasks.find({
             StartingDate: startOfThisWeek ,
             UserId: UserId,
-            TaskType:'Weekly'});
+            isRecurring:false});
 
         res.status(200).json({ tasks: tasksNextWeek });
     } catch (error) {
@@ -255,7 +254,7 @@ const showPrevWeek = async (req, res) => {
         const tasksPrevWeek = await Tasks.find({
             StartingDate: startOfPrevWeek ,
             UserId: UserId,
-            TaskType:'Weekly'
+            isRecurring:false
         });
 
         res.status(200).json({ tasks: tasksPrevWeek });
@@ -446,8 +445,8 @@ const showAny_TaskList = async (req, res) => {
     try {
 
         const { userId,taskType } = req.params;
-        console.log(userId);
-        console.log(taskType);
+        //console.log(userId);
+        //console.log(taskType);
         
         // Query tasks within this week's date range
         const TasksList = await Tasks.find({
