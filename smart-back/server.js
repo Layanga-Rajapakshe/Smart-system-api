@@ -18,6 +18,7 @@ const KPIRoutes = require('./routes/KPIroutes');
 const NotificationRoute = require('./routes/NotificationRoute');
 const TwoWeekRoute = require('./routes/TwoWeekRoute');
 const MeetingRoute = require('./routes/MeetingRoute');
+const ProjectRoute = require('./routes/ProjectRoute');
 
 const app = express();
 const server = http.createServer(app); // HTTP server for Express and Socket.IO
@@ -49,6 +50,7 @@ app.use('/api/kpis', KPIRoutes);
 app.use('/api/notifications', NotificationRoute);
 app.use('/api/twoweek',TwoWeekRoute);
 app.use('/api/meeting',MeetingRoute);
+app.use('/api/project', ProjectRoute);
 
 
 // Default Route
