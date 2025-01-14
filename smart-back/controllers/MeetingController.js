@@ -66,6 +66,7 @@ const getAllMeetings = async (req, res) => {
 
         const formattedMeetings = meetings.map((meeting) => ({
             id: meeting._id,
+            ProjectId: meeting.ProjectId,
             topic: meeting.topic,
             dateTime: meeting.dateTime,
             description: meeting.description,
