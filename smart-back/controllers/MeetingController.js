@@ -208,6 +208,7 @@ const getMeetingsByProjectId = async (req, res) => {
     }
 };
 
+
 module.exports = {
     createMeeting,
     getAllMeetings,
