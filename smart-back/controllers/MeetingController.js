@@ -178,6 +178,35 @@ const addDiscussionPoints = async (req, res) => {
         res.status(500).json({ message: "Failed to update discussion points", error: error.message });
     }
 };
+const getMeetingsByProjectId = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+
+        const meetings = await Meeting.find({ ProjectId: projectId })
+            .populate("ProjectManager", "name")
+            .populate("attendees", "name email");
+
+        if (meetings.length === 0) {
+            return res.status(404).json({ message: "No meetings found for this project." });
+        }
+
+        const projectName = `Project ${projectId}`; // Mock project name
+
+        res.status(200).json({
+            projectName,
+            meetings: meetings.map((meeting) => ({
+                id: meeting._id,
+                topic: meeting.topic,
+                dateTime: meeting.dateTime,
+                description: meeting.description,
+                ProjectManager: meeting.ProjectManager.name,
+                attendees: meeting.attendees.map((attendee) => attendee.name),
+            })),
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch meetings by project ID.", error: error.message });
+    }
+};
 
 module.exports = {
     createMeeting,
@@ -186,4 +215,5 @@ module.exports = {
     updateMeeting,
     deleteMeeting,
     addDiscussionPoints,
+    getMeetingsByProjectId,
 };
