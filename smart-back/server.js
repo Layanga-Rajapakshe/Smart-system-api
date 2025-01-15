@@ -53,6 +53,7 @@ app.use('/api/notifications', NotificationRoute);
 app.use('/api/twoweek',TwoWeekRoute);
 app.use('/api/meeting',MeetingRoute);
 app.use('/api/project', ProjectRoute);
+app.use('/api/kpi-parameter', KPIParameter);
 
 
 // Default Route

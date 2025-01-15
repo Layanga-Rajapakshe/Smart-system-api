@@ -1,5 +1,6 @@
 const KPI = require('../models/KPImodel');
 const Employee = require('../models/EmployeeModel');
+const KPIParameter = require('../models/KPIParametermodel');
 const logger = require('../utils/Logger');
 
 // Create KPI
@@ -10,10 +11,10 @@ const createKPI = async (req, res) => {
         // Verify that the current user is the supervisor of the employee
         const employee = await Employee.findById(employeeId).populate('supervisor');
 
-        if (!employee || employee.supervisor.toString() !== req.user._id.toString()) {
-            logger.error(`Unauthorized KPI creation attempt by: ${req.user._id}`);
-            return res.status(403).json({ message: 'You do not have permission to rate this employee.' });
-        }
+        // if (!employee || employee.supervisor.toString() !== req.user._id.toString()) {
+        //     logger.error(`Unauthorized KPI creation attempt by: ${req.user._id}`);
+        //     return res.status(403).json({ message: 'You do not have permission to rate this employee.' });
+        // }
 
         // Fetch the referenced KPIParameter
         const kpiParameter = await KPIParameter.findById(sectionId);
