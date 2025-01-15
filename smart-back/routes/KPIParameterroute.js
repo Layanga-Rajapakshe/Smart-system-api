@@ -5,7 +5,7 @@ const checkPermissionMiddleware = require('../middleware/CheckPermission');
 const router = express.Router();
 
 // Add KPI parameter (only CEO)
-router.post('/kpi-parameters', checkPermissionMiddleware('add_parameters'), createKPIParameter);
+router.post('/kpi-parameters', createKPIParameter);
 
 // Update KPI parameter (only CEO)
 router.put('/kpi-parameters/:id', checkPermissionMiddleware('update_parameters'), updateKPIParameter);

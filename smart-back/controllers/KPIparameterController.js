@@ -1,4 +1,4 @@
-const KPIParameter = require('../models/KPIParameter');
+const KPIParameter = require('../models/KPIParametermodel');
 
 // Add KPI parameters
 const createKPIParameter = async (req, res) => {
