@@ -44,7 +44,7 @@ const MeetingSchema = new mongoose.Schema({
         assignedTo: { // Employee assigned to the task
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
-            required: true
+            default: ""
         },
         status: { type: String, enum: ["pending", "completed"], default: "pending" }, // Task status
         spillover: { type: Boolean, default: false } // Indicates if the task is a spillover
