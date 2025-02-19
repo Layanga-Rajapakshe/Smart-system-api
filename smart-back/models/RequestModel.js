@@ -19,6 +19,6 @@ const RequestTypeschema = new mongoose.Schema(
   }
 );
 
-const RequestType = mongoose.model("Project", RequestTypeschema);
+const RequestType = mongoose.model("RequestType", RequestTypeschema);
 
 module.exports = RequestType;

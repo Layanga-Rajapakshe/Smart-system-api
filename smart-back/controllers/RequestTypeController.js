@@ -1,5 +1,5 @@
 const express = require("express");
-const RequestType = require("../models/RequestType");
+const RequestType = require("../models/RequestModel");
 
 // Create a new request type
 const createRequestType = async (req, res) => {
