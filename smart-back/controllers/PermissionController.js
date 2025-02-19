@@ -1,16 +1,16 @@
+const express = require("express");
 const Request = require("../models/Request");
 const Employee = require("../models/Employee");
 
 // Create a new request
 const createRequest = async (req, res) => {
     try {
-        const { requestType, details, hierarchyLevelRequired, additionalInfo } = req.body;
+        const { requestType, details, additionalInfo } = req.body;
 
         const newRequest = new Request({
             requestType,
             requestedBy: req.user.id, // Assuming `req.user.id` contains the logged-in user's ID
             details,
-            hierarchyLevelRequired,
             additionalInfo,
         });
 
@@ -24,7 +24,7 @@ const createRequest = async (req, res) => {
 // Get all requests (for admin or approver)
 const getAllRequests = async (req, res) => {
     try {
-        const requests = await Request.find().populate("requestedBy approvedBy");
+        const requests = await Request.find().populate("requestedBy approvedBy requestType");
         res.status(200).json(requests);
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch requests" });
@@ -34,7 +34,7 @@ const getAllRequests = async (req, res) => {
 // Get employee-specific requests
 const getMyRequests = async (req, res) => {
     try {
-        const myRequests = await Request.find({ requestedBy: req.user.id });
+        const myRequests = await Request.find({ requestedBy: req.user.id }).populate("requestType");
         res.status(200).json(myRequests);
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch your requests" });
@@ -47,7 +47,7 @@ const updateRequestStatus = async (req, res) => {
         const { status } = req.body; // 'approved' or 'rejected'
         const { id } = req.params; // Request ID
 
-        const request = await Request.findById(id).populate("requestedBy approvedBy");
+        const request = await Request.findById(id).populate("requestedBy approvedBy requestType");
 
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
@@ -55,7 +55,16 @@ const updateRequestStatus = async (req, res) => {
 
         const approver = await Employee.findById(req.user.id); // Fetch the approver
 
-        if (approver.hierarchyLevel < request.hierarchyLevelRequired) {
+        if (!approver) {
+            return res.status(403).json({ error: "Approver not found" });
+        }
+
+        const requestTypeData = await RequestType.findById(request.requestType);
+        if (!requestTypeData) {
+            return res.status(404).json({ error: "Request type not found" });
+        }
+
+        if (approver.hierarchyLevel < requestTypeData.hierarchyLevelRequired) {
             return res.status(403).json({ error: "Insufficient hierarchy level to approve this request" });
         }
 
@@ -69,4 +78,5 @@ const updateRequestStatus = async (req, res) => {
         res.status(500).json({ error: "Failed to update request status" });
     }
 };
+
 module.exports = { createRequest, getAllRequests, getMyRequests, updateRequestStatus };

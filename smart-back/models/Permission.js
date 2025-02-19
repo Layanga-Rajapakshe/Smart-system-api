@@ -2,10 +2,9 @@ const mongoose = require("mongoose");
 
 const RequestSchema = new mongoose.Schema({
     requestType: {
-        type: String,
-        enum: ['leave', 'expense', 'shift_change', 'promotion', 'other'],
-        required: true,
-        // The type of request (leave, expense, shift change, etc.)
+       type: mongoose.Schema.Types.ObjectId, 
+        ref: "RequestType",                          
+        required: true, 
     },
     requestedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -28,11 +27,6 @@ const RequestSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',
         // The employee who approves or rejects the request
-    },
-    hierarchyLevelRequired: {
-        type: Number,
-        required: true,
-        // The minimum hierarchy level required to approve the request (higher-level employees only)
     },
     requestDate: {
         type: Date,
