@@ -57,7 +57,7 @@ app.use('/api/meeting',MeetingRoute);
 app.use('/api/project', ProjectRoute);
 app.use('/api/kpi-parameter', KPIParameter);
 app.use('/api/request', RequestRoute);
-api.use('/api/permission', PermissionRoute);
+app.use('/api/permission', PermissionRoute);
 
 
 // Default Route

@@ -1,6 +1,6 @@
 const express = require("express");
-const Request = require("../models/Request");
-const Employee = require("../models/Employee");
+const Request = require("../models/RequestModel");
+const Employee = require("../models/EmployeeModel");
 
 // Create a new request
 const createRequest = async (req, res) => {
