@@ -4,7 +4,6 @@ const RequestTypeschema = new mongoose.Schema(
   {
     requestType: {
         type: String,
-        enum: ['leave', 'expense', 'shift_change', 'promotion', 'other'],
         required: true,
         // The type of request (leave, expense, shift change, etc.)
     },
