@@ -21,6 +21,7 @@ const MeetingRoute = require('./routes/MeetingRoute');
 const ProjectRoute = require('./routes/ProjectRoute');
 const KPIParameter = require('./routes/KPIParameterRoute');
 const RequestRoute = require('./routes/RequestRoute');
+const PermissionRoute = require('./routes/PermissionRoute');
 
 
 const app = express();
@@ -56,6 +57,7 @@ app.use('/api/meeting',MeetingRoute);
 app.use('/api/project', ProjectRoute);
 app.use('/api/kpi-parameter', KPIParameter);
 app.use('/api/request', RequestRoute);
+api.use('/api/permission', PermissionRoute);
 
 
 // Default Route
