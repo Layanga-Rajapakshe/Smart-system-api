@@ -1,5 +1,6 @@
 const express = require("express");
-const Request = require("../models/RequestModel");
+const Request = require("../models/Permission");
+const RequestType = require("../models/RequestModel");
 const Employee = require("../models/EmployeeModel");
 
 // Create a new request
@@ -7,9 +8,23 @@ const createRequest = async (req, res) => {
     try {
         const { requestType, details, additionalInfo } = req.body;
 
+        if (!requestType || !details) {
+            return res.status(400).json({ error: "Request type and details are required" });
+        }
+
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "Unauthorized. Please log in." });
+        }
+
+        // Validate request type
+        const requestTypeExists = await RequestType.findById(requestType);
+        if (!requestTypeExists) {
+            return res.status(404).json({ error: "Invalid request type" });
+        }
+
         const newRequest = new Request({
             requestType,
-            requestedBy: req.user.id, // Assuming `req.user.id` contains the logged-in user's ID
+            requestedBy: req.user.id,
             details,
             additionalInfo,
         });
@@ -17,6 +32,7 @@ const createRequest = async (req, res) => {
         const savedRequest = await newRequest.save();
         res.status(201).json(savedRequest);
     } catch (error) {
+        console.error("Error creating request:", error);
         res.status(500).json({ error: "Failed to create request" });
     }
 };
@@ -27,16 +43,22 @@ const getAllRequests = async (req, res) => {
         const requests = await Request.find().populate("requestedBy approvedBy requestType");
         res.status(200).json(requests);
     } catch (error) {
+        console.error("Error fetching requests:", error);
         res.status(500).json({ error: "Failed to fetch requests" });
     }
 };
 
-// Get employee-specific requests
+// Get requests for the logged-in employee
 const getMyRequests = async (req, res) => {
     try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "Unauthorized. Please log in." });
+        }
+
         const myRequests = await Request.find({ requestedBy: req.user.id }).populate("requestType");
         res.status(200).json(myRequests);
     } catch (error) {
+        console.error("Error fetching user requests:", error);
         res.status(500).json({ error: "Failed to fetch your requests" });
     }
 };
@@ -47,13 +69,17 @@ const updateRequestStatus = async (req, res) => {
         const { status } = req.body; // 'approved' or 'rejected'
         const { id } = req.params; // Request ID
 
-        const request = await Request.findById(id).populate("requestedBy approvedBy requestType");
+        if (!["approved", "rejected"].includes(status)) {
+            return res.status(400).json({ error: "Invalid status value" });
+        }
+
+        const request = await Request.findById(id).populate("requestedBy requestType");
 
         if (!request) {
             return res.status(404).json({ error: "Request not found" });
         }
 
-        const approver = await Employee.findById(req.user.id); // Fetch the approver
+        const approver = await Employee.findById(req.user.id);
 
         if (!approver) {
             return res.status(403).json({ error: "Approver not found" });
@@ -69,12 +95,13 @@ const updateRequestStatus = async (req, res) => {
         }
 
         request.status = status;
-        request.approvedBy = req.user.id; // Logged-in approver
-        request.approvalDate = Date.now();
+        request.approvedBy = req.user.id;
+        request.approvalDate = new Date();
 
         const updatedRequest = await request.save();
         res.status(200).json(updatedRequest);
     } catch (error) {
+        console.error("Error updating request status:", error);
         res.status(500).json({ error: "Failed to update request status" });
     }
 };
