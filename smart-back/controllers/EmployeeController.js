@@ -166,6 +166,7 @@ const updateEmployee = async (req, res) => {
 
 
 const deleteEmployee = async (req, res) => {
+    const { id } = req.params;
     try {
         const role = await Role.findById(req.user.role);
         if (req.user.role.toString() === '66fbb15030e37b523885f5ad') {
@@ -180,7 +181,6 @@ const deleteEmployee = async (req, res) => {
             return res.status(403).json({ message: 'You do not have permission to delete employees.' });
         }
 
-        const { id } = req.params;
         const employee = await Employee.findById(id);
 
         if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
