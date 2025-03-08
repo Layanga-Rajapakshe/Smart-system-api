@@ -125,6 +125,20 @@ const getRoleById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+const getAllPermissions = async (req, res) => {
+    try {
+        const roles = await Role.find({}, 'permissions'); // Retrieve only the permissions field
+
+        // Flatten the permissions array from all roles
+        const allPermissions = [...new Set(roles.flatMap(role => role.permissions))];
+
+        res.status(200).json({ permissions: allPermissions });
+    } catch (error) {
+        logger.error(`Failed to fetch permissions: ${error.message}`);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 
 
@@ -135,5 +149,6 @@ module.exports = {
     getRoles,
     getRolesByPermission,
     updateRoleById,
-    getRoleById
+    getRoleById,
+    getAllPermissions
 };
