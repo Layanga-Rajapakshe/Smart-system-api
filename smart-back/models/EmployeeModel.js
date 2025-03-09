@@ -134,6 +134,30 @@ employeeSchema.methods.isPasswordExpired = function () {
     expiryDate.setMonth(expiryDate.getMonth() + 4);
     return currentDate > expiryDate;
 };
+employeeSchema.pre('save', async function (next) {
+    if (this.isNew || this.isModified('supervisees')) {
+        // Update all supervisees' supervisor field
+        if (this.supervisees.length > 0) {
+            await Employee.updateMany(
+                { _id: { $in: this.supervisees } },
+                { $set: { supervisor: this._id } }
+            );
+        }
+    }
+
+    if (this.isNew || this.isModified('supervisor')) {
+        // Update the supervisor's supervisees list
+        if (this.supervisor) {
+            await Employee.findByIdAndUpdate(
+                this.supervisor,
+                { $addToSet: { supervisees: this._id } }
+            );
+        }
+    }
+
+    next();
+});
+
 
 const Employee = mongoose.model('Employee', employeeSchema);
 module.exports = Employee;

@@ -68,14 +68,32 @@ const getEmployee = async (req, res) => {
 
 const createEmployee = async (req, res) => {
     try {
-        const role = await Role.findById(req.user.role);
+        const { supervisees, supervisor, ...employeeData } = req.body;
 
+        // Create new employee
         const employee = new Employee({
-            ...req.body,
+            ...employeeData,
             createdBy: req.user._id
         });
 
         await employee.save();
+
+        // If supervisees are provided, update their supervisor field
+        if (supervisees && supervisees.length > 0) {
+            await Employee.updateMany(
+                { _id: { $in: supervisees } },
+                { $set: { supervisor: employee._id } }
+            );
+        }
+
+        // If a supervisor is assigned, update their supervisees list
+        if (supervisor) {
+            await Employee.findByIdAndUpdate(
+                supervisor,
+                { $addToSet: { supervisees: employee._id } } // Prevent duplicate entries
+            );
+        }
+
         logger.log(`Employee created: ${employee._id}`);
         res.status(201).json(employee);
     } catch (error) {
@@ -83,6 +101,7 @@ const createEmployee = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 
 const updateEmployee = async (req, res) => {
