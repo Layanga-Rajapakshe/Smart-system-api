@@ -62,16 +62,32 @@ const salarySchema = new mongoose.Schema({
         type:Number,
         default:0
     },
+    noPayDeductionBasic:
+    {
+        type:Number,
+        default:0
+    },
+    noPayDeductionREallowance:
+    {
+        type:Number,
+        default:0
+    },
+    totalnopayDeductions:
+    {
+        type :Number,
+        default:0
+    },
+    totalOtEarnings:
+    {
+        type: Number,
+        default:0
+    },
     noPayDeduction:
     {
         type:Number,
         default:0
     },
-    totalDeductions:
-    {
-        type :Number,
-        default:0
-    },
+
 
 
    

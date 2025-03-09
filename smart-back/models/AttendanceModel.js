@@ -24,6 +24,16 @@ const AttendanceSchema = new mongoose.Schema({
         type: Boolean,
         default: false 
     },
+    isNopay:
+    {
+        type: Boolean,
+        default: false
+    },
+    nopayday:
+    {
+        type: Number,
+        default:0
+    },
     stdHours:
     {
         type: String,

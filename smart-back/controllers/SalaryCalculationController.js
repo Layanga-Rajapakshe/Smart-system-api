@@ -1,6 +1,6 @@
 const Employee = require('../model/EmployeeModel');
 const Attendance = require('../models/AttendanceModel');
-const OTSummary = require('../models/OTSummaryModel'); // Import the new model
+const salsketch = require('../models/SalaryModel'); // Import the new model
 
 // Convert "HH:MM:SS" to total seconds
 const timeStringToSeconds = (timeString) => {
@@ -34,8 +34,19 @@ const calculateSalary = async (req, res) => {
         // Step 1: Find employees with the given posts
         const employees = await Employee.find({ post: { $in: posts } });
 
-        // Extract user IDs
-        const employeeIds = employees.map(emp => emp._id);
+        // Extract user IDs and store OT rates
+        const employeeMap = {};
+        employees.forEach(emp => {
+            employeeMap[emp._id.toString()] = {
+                singleOtRate: emp.single_ot,
+                doubleOtRate: emp.double_ot,
+                poyaOtRate: emp.double_ot,
+                BasicRate:emp.agreed_basic/30,
+                RErate: emp.re_allowance/30
+            };
+        });
+
+        const employeeIds = Object.keys(employeeMap);
 
         if (employeeIds.length === 0) {
             return res.status(404).json({ message: "No employees found for the given posts." });
@@ -59,7 +70,13 @@ const calculateSalary = async (req, res) => {
                     totalShortWorkingHrs: 0,
                     totalSingleOt: 0,
                     totalDoubleOt: 0,
-                    totalPoyaOt: 0
+                    totalPoyaOt: 0,
+                    totalNoPayDays:0,
+                    OTEarnings: 0,
+                    noPayDays:0,
+                    otDeduction:0,
+                    noPayBasicDeduction:0,
+                    noPayREDeduction:0,
                 };
             }
 
@@ -68,27 +85,57 @@ const calculateSalary = async (req, res) => {
             otSummary[userId].totalSingleOt += timeStringToSeconds(record.singleOt);
             otSummary[userId].totalDoubleOt += timeStringToSeconds(record.doubleOt);
             otSummary[userId].totalPoyaOt += timeStringToSeconds(record.poyaOt);
+            otSummary[userId].totalNoPayDays += record.nopayday;
         });
 
-        // Step 3: Save or update OT totals in OTSummary model
+        // Step 3: Multiply by OT rates
+        for (const userId in otSummary) {
+            const empRates = employeeMap[userId];
+
+            const singleOtHrs = otSummary[userId].totalSingleOt / 3600;
+            const doubleOtHrs = otSummary[userId].totalDoubleOt / 3600;
+            const poyaOtHrs = otSummary[userId].totalPoyaOt / 3600;
+            const shortHrs = otSummary[userId].totalShortWorkingHrs/3600;
+            const totalNP = otSummary[userId].totalNoPayDays;
+
+            otSummary[userId].OTEarnings =
+                singleOtHrs * empRates.singleOtRate +
+                doubleOtHrs * empRates.doubleOtRate +
+                poyaOtHrs * empRates.poyaOtRate;
+            otSummary[userId].otDeduction = shortHrs * empRates.singleOtRates;
+            otSummary[userId].noPayBasicDeduction = totalNP*BasicRate ;
+            otSummary[userId].noPayREDeduction = totalNP*RErate;
+            
+        }
+
+        // Step 4: Save or update OT totals in SalaryModel
         for (const [userId, summary] of Object.entries(otSummary)) {
-            await OTSummary.findOneAndUpdate(
+            await salsketch.findOneAndUpdate(
                 { userId, month },
                 {
                     totalExtraWorkingHrs: secondsToTimeString(summary.totalExtraWorkingHrs),
                     totalShortWorkingHrs: secondsToTimeString(summary.totalShortWorkingHrs),
                     totalSingleOt: secondsToTimeString(summary.totalSingleOt),
                     totalDoubleOt: secondsToTimeString(summary.totalDoubleOt),
-                    totalPoyaOt: secondsToTimeString(summary.totalPoyaOt)
+                    totalPoyaOt: secondsToTimeString(summary.totalPoyaOt),
+                    OtEarnings: summary.OTEarnings,
+                    OtDeduction : summary. otDeduction,
+                    noPayDeductionBasic : summary.noPayBasicDeduction,
+                    noPayDeductionREallowance: summary.noPayREDeduction,
+                    totalnopayDeductions : summary.otDeduction + summary.noPayBasicDeduction +summary.noPayREDeduction,
+                    totalOtEarnings: summary.OTEarnings -summary. otDeduction,
+
+
                 },
                 { upsert: true, new: true }
             );
         }
 
-        res.status(200).json({ message: "OT totals saved successfully", otSummary });
+        res.status(200).json({ message: `OT calculations for the month ${month} saved successfully` });
 
     } catch (error) {
         console.error("Error calculating salary:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
