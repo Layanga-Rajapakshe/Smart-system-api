@@ -100,7 +100,7 @@ const UploadExcellSheet = async (req, res) => {
         }
 
         for (const row of worksheet) {
-            const UserId = row['Employee ID'];
+            const UserId = row['Employee ID'].toString().padStart(4, '0').trim();;
             const DateRaw = row['Date'];
             const InRaw = row['IN'];  
             const OutRaw = row['OUT'];
@@ -127,16 +127,22 @@ const UploadExcellSheet = async (req, res) => {
             // Convert Work HRs to seconds
         
 
-           /* console.log('Parsed Date:', parsedDate);
+           console.log('Parsed Date:', parsedDate);
             console.log('IN:', parsedInTime);
             console.log('OUT:', parsedOutTime);
-            console.log('Work HRs (seconds):', timePeriodInSeconds);*/
+            console.log('Work HRs (seconds):', timePeriodInSeconds);
 
             // Insert or update attendance
+            const employee = await Employee.findOne({ userId: UserId });  // Adjust field name
+            if (!employee) {
+            console.error(`Employee not found for ID: ${UserId}`);
+            continue;  // Skip if no match
+            }
+        const userIdObject = employee._id.toString();
            
 
             await Attendance.findOneAndUpdate(
-                { UserId: UserId, Date: parsedDate }, 
+                { UserId: userIdObject, Date: parsedDate }, 
                 {
                     $set: {
                         In: parsedInTime,  
@@ -151,7 +157,7 @@ const UploadExcellSheet = async (req, res) => {
             if(sat===1){
 
                 await Attendance.findOneAndUpdate(
-                    { UserId: UserId, Date: parsedDate }, 
+                    { UserId: userIdObject, Date: parsedDate }, 
                     {
                         $set: {
                             stdHours:"04:00:00" ,
@@ -162,7 +168,7 @@ const UploadExcellSheet = async (req, res) => {
                 );
             }
 
-            processAttendanceData(parsedDate,UserId);
+            processAttendanceData(parsedDate,userIdObject);
 
         
         }
@@ -317,6 +323,11 @@ const reShowAttendanceRecords = async (req, res) => {
         const { userId, month } = req.params;
         console.log('User ID:', userId);
         console.log('Month:', month);
+        const employee = await Employee.findOne({ userId: userId });  // Adjust field name
+            if (!employee) {
+            console.error(`Employee not found for ID: ${UserId}`); // Skip if no match
+            }
+        const userIdObject = employee._id.toString();
 
         // Parse year and month
         const [year, monthNum] = month.split('-').map(Number);
@@ -340,7 +351,7 @@ const reShowAttendanceRecords = async (req, res) => {
 
         // Test fetching without UserId filter
         const attendanceRecords = await Attendance.find({
-            UserId: userId,
+            UserId: userIdObject,
             Date: {
                 $gte: startDate,
                 $lt: endDate

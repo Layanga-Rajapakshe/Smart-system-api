@@ -94,6 +94,6 @@ const salarySchema = new mongoose.Schema({
 },{
     timestamps: true 
 });
-const Salary = mongoose.model('Salary', salarySchema);
+const salsketch = mongoose.model('salsketch', salarySchema);
 
-module.exports = Salary;
+module.exports = salsketch;

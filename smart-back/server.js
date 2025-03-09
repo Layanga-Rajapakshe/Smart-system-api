@@ -23,6 +23,7 @@ const KPIParameter = require('./routes/KPIParameterRoute');
 const RequestRoute = require('./routes/RequestRoute');
 const PermissionRoute = require('./routes/PermissionRoute');
 const SalaryParaRoute = require('./routes/SalaryManagementRoute');
+const SalarySketchRoute = require('./routes/salaryCalculationRoute');
 
 const app = express();
 const server = http.createServer(app); // HTTP server for Express and Socket.IO
@@ -59,6 +60,7 @@ app.use('/api/kpi-parameter', KPIParameter);
 app.use('/api/request', RequestRoute);
 app.use('/api/permission', PermissionRoute);
 app.use('/api/salParam',SalaryParaRoute);
+app.use('/api/salary',SalarySketchRoute);
 
 
 // Default Route
