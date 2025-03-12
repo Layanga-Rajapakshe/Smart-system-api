@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const AttendanceSchema = new mongoose.Schema({
     UserId: {
-        type: String, 
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',
         required: true
     },
@@ -23,6 +23,16 @@ const AttendanceSchema = new mongoose.Schema({
     isLeave: {
         type: Boolean,
         default: false 
+    },
+    isNopay:
+    {
+        type: Boolean,
+        default: false
+    },
+    nopayday:
+    {
+        type: Number,
+        default:0
     },
     stdHours:
     {
