@@ -95,7 +95,7 @@ const calculateSalary = async (req, res) => {
             Date: { $gte: startDate, $lt: endDate }
             
         });
-        console.log({ $gte: startDate, $lt: endDate })
+        //console.log({ $gte: startDate, $lt: endDate })
         console.log(attendanceRecords);
 
         const otSummary = {};
