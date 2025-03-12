@@ -57,39 +57,76 @@ const salarySchema = new mongoose.Schema({
         type:Number,
         default:0
     },
-    OtDeduction:
+    OtDeduction://for labours
     {
         type:Number,
         default:0
     },
-    noPayDeductionBasic:
+    noPayDeductionBasic://staff
     {
         type:Number,
         default:0
     },
-    noPayDeductionREallowance:
+    noPayDeductionREallowance://staff
     {
         type:Number,
         default:0
     },
-    totalnopayDeductions:
-    {
-        type :Number,
-        default:0
-    },
-    totalOtEarnings:
+    totalOtEarnings://labours
     {
         type: Number,
         default:0
     },
-    noPayDeduction:
+    nopaydays_ot://Staff, this nopay days are calculated using shortworking hours
     {
         type:Number,
         default:0
     },
-
-
-
+    nopaydays://staff,these are get from the leave management
+    {
+        type:Number,
+        default:0
+    },
+    totalNPdays:
+    {
+        type: Number,
+        default:0
+    },
+    totalIncomeForTheMonth:
+    {
+        type:Number,
+        default:0
+    },
+    newBasic:
+    {
+        type:Number,
+        default:0
+    },
+    newRE:
+    {
+        type: Number,
+        default:0
+    },
+    EPF_employee:
+    {
+        type: Number,
+        default:0
+    },
+    EPF_employer:
+    {
+        type:Number,
+        default:0
+    },
+    FinalSalary:
+    {
+        type:Number,
+        default:0
+    },
+    otherDeductions:
+    {
+        type:Number,
+        default:0
+    }
    
 },{
     timestamps: true 

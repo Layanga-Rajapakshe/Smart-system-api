@@ -93,6 +93,11 @@ const employeeSchema = new mongoose.Schema({
     passwordChangedAt: {
         type: Date,
         default: Date.now
+    },
+    isEPF:
+    {
+        type:Boolean,
+        default:false
     }
 }, {
     timestamps: true

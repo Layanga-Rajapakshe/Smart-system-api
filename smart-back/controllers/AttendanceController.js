@@ -33,7 +33,7 @@ const isSaturday = (dateString) => {
 
 const isSunday = (dateString) => {
     const date = new Date(dateString);
-    return date.getDay() === 0; // 6 represents Saturday
+    return date.getDay() === 0; // 0 represents sunday
 };
 
 
@@ -42,9 +42,9 @@ const isHoliday = async (date) => {
         const holiday = await Holidays.findOne({ date: date });
 
         if (holiday) {
-            return holiday.name; // Assuming the holiday model has a 'name' field
+            return holiday.Name; // Assuming the holiday model has a 'name' field
         } else {
-            return null;  // If no holiday is found, return null (instead of 0 for clarity)
+            return 0;  // If no holiday is found, return null (instead of 0 for clarity)
         }
     } catch (error) {
         console.error('Error checking for holiday:', error);
@@ -154,7 +154,9 @@ const UploadExcellSheet = async (req, res) => {
             );
 
             const sat = isSaturday(parsedDate);
-            if(sat===1){
+            const sun = isSunday(parsedDate);
+            const holi = isHoliday(parsedDate);
+            if(sat== 1){
 
                 await Attendance.findOneAndUpdate(
                     { UserId: userIdObject, Date: parsedDate }, 
@@ -162,6 +164,32 @@ const UploadExcellSheet = async (req, res) => {
                         $set: {
                             stdHours:"04:00:00" ,
                             holiday:1
+
+                        }
+                    }
+                );
+            }
+            else if(sun == 1)
+            {
+                await Attendance.findOneAndUpdate(
+                    { UserId: userIdObject, Date: parsedDate }, 
+                    {
+                        $set: {
+                            stdHours:"00:00:00" ,
+                            holiday:2
+
+                        }
+                    }
+                );
+            }
+            if(holi=== (3||4))
+            {
+                await Attendance.findOneAndUpdate(
+                    { UserId: userIdObject, Date: parsedDate }, 
+                    {
+                        $set: {
+                            stdHours:"00:00:00" ,
+                            holiday: 3
 
                         }
                     }
@@ -252,39 +280,45 @@ const addSalMonth = async (req, res) => {// this function should be called befor
 const processAttendanceData = async (parsedDate, UserId) => {
     try {
         let Name = await isHoliday(parsedDate);
+        if(Name==0){
         
         if (isSaturday(parsedDate)) {
-            Name = 1; // Saturday is treated as a regular day with half standard hours
-        } else if (isSunday(parsedDate)) {
-            Name = 2; // Sunday is treated as a holiday
+            Name = 2; // Saturday is treated as a regular day with half standard hours
         }
+        if (isSunday(parsedDate)) {
+            Name = 1; // Sunday is treated as a holiday
+        }}
 
         const OT = await calOT(parsedDate, UserId);
         const OTString = OT ? secondsToTimeString(OT) : null; // Convert OT only if it's a positive value
 
-        if (Name === 1 && OT > 0) {
+        
+
+        if (Name == 2 && OT > 0) {
             // Saturday, OT applies
             await Attendance.findOneAndUpdate(
                 { UserId: UserId, Date: parsedDate },
                 {
                     $set: {
-                        stdHours: "04:00:00",  // 4 hours standard on Saturdays
+                         // 4 hours standard on Saturdays
                         isHoliday: false,
-                        holiday: Name,  // Name indicates Saturday
-                        singleOt: OTString
+                        holiday: 1,  // Name indicates Saturday
+                        singleOt: OTString,
+                        extraWorkingHrs: OTString
                     }
                 }
             );
-        } else if (Name > 1 && OT > 0) {
+        } else if (Name = 1 && OT > 0) {
             // Sunday or another holiday, double OT applies
             await Attendance.findOneAndUpdate(
                 { UserId: UserId, Date: parsedDate },
                 {
                     $set: {
-                        stdHours: "00:00:00",  // No standard hours on holidays
+                         // No standard hours on holidays
                         isHoliday: true,
-                        holiday: Name,  // Name indicates Sunday or other holiday
-                        doubleOt: OTString
+                     // Name indicates Sunday or other holiday
+                        doubleOt: OTString,
+                        extraWorkingHrs: OTString
                     }
                 }
             );
@@ -346,8 +380,8 @@ const reShowAttendanceRecords = async (req, res) => {
 
         // Log for debugging
         //console.log('User ID:', userId);
-        //console.log('Start Date:', startDate);
-        //console.log('End Date:', endDate);
+        console.log('Start Date:', startDate);
+        console.log('End Date:',userIdObject );
 
         // Test fetching without UserId filter
         const attendanceRecords = await Attendance.find({
