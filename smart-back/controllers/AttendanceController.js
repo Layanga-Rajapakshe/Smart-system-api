@@ -148,6 +148,7 @@ const UploadExcellSheet = async (req, res) => {
                         In: parsedInTime,  
                         Out: parsedOutTime,  
                         TimePeriod: timePeriodInSeconds,  
+                        isPresent: true,
                     }
                 },
                 { upsert: true, new: true } 
@@ -219,49 +220,57 @@ const addSalMonth = async (req, res) => {// this function should be called befor
         const endOfPeriod = new Date(currentDate.getFullYear(), currentDate.getMonth(), 20);
 
         // Step 2: Get all active users
-        const activeUsers = await Employee.find({ status: 'active' }).distinct('userId');
+        const activeUsers = await Employee.find({ status: 'active' }).distinct('_id');
 
         if (!activeUsers.length) {
             return res.status(404).json({ message: 'No active users found' });
         }
 
         // Step 3: Loop over each active user and create date objects for the range
-        for (const userId of activeUsers) {
+        for (const _id of activeUsers) {
             let currentDate = new Date(startOfPeriod);
 
             while (currentDate <= endOfPeriod) {
                 const dateToSave = new Date(currentDate);
 
                 // Check if an entry for this date and user already exists
-                const existingAttendance = await Attendance.findOne({ UserId: userId, Date: dateToSave });
+                const existingAttendance = await Attendance.findOne({ UserId: _id, Date: dateToSave });
 
                 if (!existingAttendance) {
                     let stdHours = '09:00:00';
-                    shortWorkingHrs='-09:00:00' // Default for weekdays
+                    // Default for weekdays
                 
                     // Check if the date is a Saturday, Sunday, or a holiday
+                    
                     const dayOfWeek = dateToSave.getDay(); // 0 = Sunday, 6 = Saturday
-                
-                    if (dayOfWeek === 6) { // If Saturday
+                    const holidayCheck = await isHoliday(dateToSave);
+                    if (holidayCheck) {
+                        stdHours = '00:00:00'; // If it's a holiday, set hours to 00:00:00
+                    }
+                    else if (dayOfWeek === 6) { // If Saturday
                         stdHours = '04:00:00';
-                        shortWorkingHrs='-04:00:00';
+                        
                     } else if (dayOfWeek === 0) { // If Sunday
                         stdHours = '00:00:00';
-                    } else {
-                        const holidayCheck = await isHoliday(dateToSave);
-                        if (holidayCheck) {
-                            stdHours = '00:00:00'; // If it's a holiday, set hours to 00:00:00
-                        }
                     }
+                    else 
+                    {
+                        stdHours = '09:00:00';
+                        
+                    }
+                    
+                    
+                    
                 
                     // Create a new attendance object for this date
                     await Attendance.create({
-                        UserId: userId,
+                        UserId: _id,
                         Date: dateToSave,
                         stdHours: stdHours, // Set appropriate standard hours based on the conditions
                         In: '00:00:00',
                         Out: '00:00:00',
                         TimePeriod: '00:00:00',
+                        isPresent: false,
                     });
                 }
                 // Move to the next day

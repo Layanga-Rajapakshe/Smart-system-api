@@ -209,6 +209,25 @@ const calculateSalary = async (req, res) => {
     }
 };
 
+const showsalarysheet =async(req,res)=>
+{
+    try
+    {
+        const {userId,month} = req.body;
+        const employee = await Employee.findOne({ userId: userId });  // Adjust field name
+                    if (!employee) {
+                    console.error(`Employee not found for ID: ${UserId}`);
+                     // Skip if no match
+                    }
+                const userIdObject = employee._id.toString();
+
+
+    }
+    catch{
+
+    }
+}
+
 
 
 

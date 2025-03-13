@@ -72,6 +72,11 @@ const AttendanceSchema = new mongoose.Schema({
     isHoliday:
     {
         type:Boolean
+    },
+    isPresent:
+    {
+        type:Boolean,
+        default:false
     }
 }, { 
     timestamps: true
