@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {  createProject,getAllProjects,getProjectById,updateProject,deleteProject} = require("../controllers/ProjectController");
 const checkPermissionMiddleware = require('../middleware/CheckPermission');
-const authenticateUser = require('../middleware/AuthenticateUser');
+const {authenticateUser} = require('../middleware/AuthenticateUser');
 
 // Routes for the Project model
 router.post("/",authenticateUser, createProject); // Create a new project

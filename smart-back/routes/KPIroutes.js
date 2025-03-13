@@ -1,6 +1,6 @@
 const express = require('express');
 const { createKPI, getEmployeeKPIs, updateKPI } = require('../controllers/KPIController');
-const authenticateUser = require('../middleware/AuthenticateUser');
+const {authenticateUser} = require('../middleware/AuthenticateUser');
 
 
 const router = express.Router();

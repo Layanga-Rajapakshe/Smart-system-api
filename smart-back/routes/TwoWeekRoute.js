@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { addNewTask,showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,finishAtask,showAny_WeeklyTasks,showAny_TaskList } = require('../controllers/TwoWeekController');
-const authenticateUser = require('../middleware/AuthenticateAttendance');
+const {authenticateUser} = require('../middleware/AuthenticateAttendance');
 
 
 
