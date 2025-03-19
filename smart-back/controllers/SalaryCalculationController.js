@@ -168,7 +168,7 @@ const calculateSalary = async (req, res) => {
             const existingSalary = await SalaryModel.findOne({ userId, month });
         
             // Get previous deductions (if salary record exists)
-            const salaryAdvance = existingSalary?.sallaryAdvance || 0;
+            const salaryAdvance = existingSalary?.sallaryAdvance || 0;//implement the controller to add salary advances and other deductions, also the logic for the update whenever somthing is changed
             const mealAdvance = existingSalary?.mealAdvance || 0;
             const otherDeductions = existingSalary?.otherDeductions || 0;
         
@@ -209,27 +209,38 @@ const calculateSalary = async (req, res) => {
     }
 };
 
-const showsalarysheet =async(req,res)=>
-{
-    try
-    {
-        const {userId,month} = req.body;
-        const employee = await Employee.findOne({ userId: userId });  // Adjust field name
-                    if (!employee) {
-                    console.error(`Employee not found for ID: ${UserId}`);
-                     // Skip if no match
-                    }
-                const userIdObject = employee._id.toString();
+const showsalarysheet = async (req, res) => {
+    try {
+        const { userId, month } = req.body;
 
+        if (!userId || !month) {
+            return res.status(400).json({ error: "Missing required parameters: userId or month." });
+        }
 
+        // Find the employee using the provided userId
+        const employee = await Employee.findOne({ userId: userId }); // Ensure correct field matching
+        if (!employee) {
+            console.error(`Employee not found for ID: ${userId}`);
+            return res.status(404).json({ error: "Employee not found." });
+        }
+
+        // Fetch salary details using employee ID and month
+        const salaryDetails = await SalaryModel.findOne({ userId: employee._id, month });
+
+        if (!salaryDetails) {
+            return res.status(404).json({ error: "Salary details not found for the given user and month." });
+        }
+
+        return res.status(200).json({ employee, salaryDetails });
+    } catch (error) {
+        console.error("Error fetching salary details:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
-    catch{
-
-    }
-}
+};
 
 
 
 
-module.exports = { calculateSalary };
+
+module.exports = { calculateSalary,showsalarysheet };
 
