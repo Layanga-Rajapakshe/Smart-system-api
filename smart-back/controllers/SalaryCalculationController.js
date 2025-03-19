@@ -218,7 +218,7 @@ const showsalarysheet = async (req, res) => {
         }
 
         // Find the employee using the provided userId
-        const employee = await Employee.findOne({ _id: userId }); // Ensure correct field matching
+        const employee = await Employee.findOne({ userId: userId }); // Ensure correct field matching
         if (!employee) {
             console.error(`Employee not found for ID: ${userId}`);
             return res.status(404).json({ error: "Employee not found." });
