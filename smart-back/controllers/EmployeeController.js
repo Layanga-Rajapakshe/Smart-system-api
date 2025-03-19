@@ -1,6 +1,8 @@
 const Employee = require('../models/EmployeeModel');
 const Role = require('../models/RoleModel');
+const Task = require('../models/TwoWeekModel');
 const logger = require('../utils/Logger');
+
 
 // Helper function to check permissions
 const hasPermission = (role, requiredPermission) => {
@@ -39,8 +41,6 @@ const getEmployee = async (req, res) => {
             return res.status(200).json(employees);
         }
 
-        
-        
         const employee = await Employee.findById(id).populate('supervisor');
 
         if (!employee || (employee.company && employee.company.toString() !== req.user.company.toString())) {
@@ -253,6 +253,44 @@ const getEmployeeRole = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+const getSupervisees = async(req,res)=>{
+    try {
+        // Find the logged-in supervisor and populate supervisees
+        const supervisor = await Employee.findById(req.user._id)
+            .populate('supervisees', 'name email role');
+
+        if (!supervisor) {
+            return res.status(404).json({ message: 'Supervisor not found' });
+        }
+
+        res.status(200).json(supervisor.supervisees);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+const SuperviseeTasks = async (req,res)=>{
+    try {
+        const superviseeId = req.params.id;
+
+        // Find supervisee and also get their supervisees
+        const supervisee = await Employee.findById(superviseeId)
+            .populate('supervisees', 'name email role');
+
+        if (!supervisee) {
+            return res.status(404).json({ message: 'Supervisee not found' });
+        }
+
+        // Fetch tasks of the selected supervisee
+        const tasks = await Task.find({ UserId: superviseeId });
+
+        res.status(200).json({
+            supervisee,
+            tasks
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 
 
@@ -265,5 +303,7 @@ module.exports = {
     updateEmployee,
     deleteEmployee,
     getEmployeeWithKPIs,
-    getEmployeeRole
+    getEmployeeRole,
+    getSupervisees,
+    SuperviseeTasks
 };
