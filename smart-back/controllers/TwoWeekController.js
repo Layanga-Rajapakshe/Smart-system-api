@@ -461,9 +461,51 @@ const showAny_TaskList = async (req, res) => {
         res.status(500).json({ message: "Error fetching  tasks", error });
     }
 };
+const addComment = async(req,res)=>{
+    try {
+        const { taskId } = req.params;
+        const { comment } = req.body;
+
+        // Find the logged-in supervisor
+        const supervisor = await Employee.findById(req.user._id).populate('supervisees');
+
+        if (!supervisor) {
+            return res.status(404).json({ message: 'Supervisor not found' });
+        }
+
+        // Find the task and check if it belongs to a supervisee
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        if (!supervisor.supervisees.some(emp => emp._id.equals(task.UserId))) {
+            return res.status(403).json({ message: 'You do not have permission to update this task' });
+        }
+
+        // Update the task with the comment
+        task.Comment = comment;
+        await task.save();
+
+        res.status(200).json({ message: 'Comment added successfully', task });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 
 
 
-module.exports = { showAny_WeeklyTasks,addNewTask, /*addNewTask_recurring,*/showNextWeek,showPrevWeek,showThisWeek,getTotalAllocatedTimeThisWeek,/*getTotalAllocatedTimeNextWeek,getTotalAllocatedTimePrevWeek,*/finishAtask,showAny_TaskList  };
+module.exports = { showAny_WeeklyTasks,
+    addNewTask,
+     /*addNewTask_recurring,*/
+     showNextWeek,showPrevWeek,
+     showThisWeek,getTotalAllocatedTimeThisWeek,
+     /*getTotalAllocatedTimeNextWeek,
+     getTotalAllocatedTimePrevWeek,*/
+     finishAtask,
+     showAny_TaskList,
+     addComment
+      };
 
