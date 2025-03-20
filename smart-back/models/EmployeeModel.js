@@ -98,7 +98,18 @@ const employeeSchema = new mongoose.Schema({
     {
         type:Boolean,
         default:false
-    }
+    },
+    startingYrAnnualLeaves:
+    {
+        type: Number,
+        Default:0,
+        required:true
+    },
+    startingYrCasualLeaves:
+    {
+        type:Number,
+        Default:0,
+        required:true    }
 }, {
     timestamps: true
 });
