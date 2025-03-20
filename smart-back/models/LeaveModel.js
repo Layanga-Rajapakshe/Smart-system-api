@@ -4,7 +4,7 @@ const LeaveSchema = new mongoose.Schema(
     {
         UserId:
         {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
             ref:'Employee',
             required:true
         },
