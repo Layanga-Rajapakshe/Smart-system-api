@@ -192,7 +192,18 @@ const showsalarysheet = async (req, res) => {
             return res.status(404).json({ error: "Salary details not found for the given user and month." });
         }
 
-        return res.status(200).json({ employee, salaryDetails });
+        return res.status(200).json({ employee: {
+            Id: employee.userId,
+            name: employee.name, // Include only required fields
+            post: employee.post,
+            basic: employee.agreed_basic,
+            reAllowance: employee.re_allowance,
+            singleOtrate:employee.single_ot,
+            doubleOtRate:employee.double_ot,
+            mealAllowance:employee.meal_allowance,
+
+
+        }, salaryDetails });
     } catch (error) {
         console.error("Error fetching salary details:", error);
         return res.status(500).json({ error: "Internal Server Error" });
