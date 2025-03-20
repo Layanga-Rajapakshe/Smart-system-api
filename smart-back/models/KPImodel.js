@@ -13,9 +13,16 @@ const kpiSchema = new mongoose.Schema({
     },
     section: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'KPIParameter',
+        ref: 'KPIParameter', // Reference to KPIParameter document
+        required: true
     },
-    
+    values: {
+        attitude: [{ value: { type: Number, min: 0, max: 5, required: true } }],
+        habits: [{ value: { type: Number, min: 0, max: 5, required: true } }],
+        skills: [{ value: { type: Number, min: 0, max: 5, required: true } }],
+        performance: [{ value: { type: Number, min: 0, max: 5, required: true } }],
+        knowledge: [{ value: { type: Number, min: 0, max: 5, required: true } }]
+    },
     comment: {
         type: String
     },
