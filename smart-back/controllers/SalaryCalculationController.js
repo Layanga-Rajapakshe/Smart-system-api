@@ -209,12 +209,49 @@ const showsalarysheet = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+ const salaryHistory =async(req,res)=>
+ {
+    try {
+        
+        const { userId } = req.params; // Extract userId correctly
+        const employee = await Employee.findOne({ userId: userId }); // Ensure correct field matching
+        if (!employee) {
+            console.error(`Employee not found for ID: ${userId}`);
+            return res.status(404).json({ error: "Employee not found." });
+        }
+        const salaries = await SalaryModel.find({ userId:employee._id }); // Fetch all salary records for the user
+    
+        if (!salaries || salaries.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No salary details found for this employee."
+            });
+        }
+    
+        // Format response to return selected fields for each salary entry
+        return res.status(200).json({
+            success: true,
+            salaryDetails: salaries.map(salary => ({
+                month: salary.month,
+                FinalSalary: salary.FinalSalary,
+                FinalSalary: salary.FinalSalary,
+                EPF_employee: salary.EPF_employee,
+                totalIncomeForTheMonth: salary.totalIncomeForTheMonth
+
+            }))
+        });
+    } catch (error) {
+        console.error("Error fetching salary details:", error);
+        res.status(500).json({ success: false, message: "Internal server error." });
+    }
+    
+   
+ }
 
 
 
 
 
 
-
-module.exports = { calculateSalary,showsalarysheet };
+module.exports = { calculateSalary,showsalarysheet,salaryHistory };
 
