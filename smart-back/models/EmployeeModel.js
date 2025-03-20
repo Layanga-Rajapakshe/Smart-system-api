@@ -109,7 +109,12 @@ const employeeSchema = new mongoose.Schema({
     {
         type:Number,
         Default:0,
-        required:true    }
+        required:true    },
+    emergencyContact:
+    {
+        type: Number,
+        
+    }
 }, {
     timestamps: true
 });

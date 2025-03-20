@@ -247,6 +247,17 @@ const showsalarysheet = async (req, res) => {
     
    
  }
+ const complainForm = async (req,res)=>
+ {
+    try
+    {
+        const {userId,contact} =req.body;
+    }
+    catch
+    {
+
+    }
+ }
 
 
 
