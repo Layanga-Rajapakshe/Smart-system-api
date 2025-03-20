@@ -11,18 +11,18 @@ const kpiSchema = new mongoose.Schema({
         ref: 'Employee',
         required: true
     },
-    section: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'KPIParameter', // Reference to KPIParameter document
-        required: true
-    },
-    values: {
-        attitude: [{ value: { type: Number, min: 0, max: 5, required: true } }],
-        habits: [{ value: { type: Number, min: 0, max: 5, required: true } }],
-        skills: [{ value: { type: Number, min: 0, max: 5, required: true } }],
-        performance: [{ value: { type: Number, min: 0, max: 5, required: true } }],
-        knowledge: [{ value: { type: Number, min: 0, max: 5, required: true } }]
-    },
+    section: [[{  // 2D array structure
+        parameter: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'KPIParameter', // Reference to KPIParameter model
+            required: true
+        },
+        value: {
+            type: Number, // Assuming KPI value is numeric (adjust as needed)
+            required: true
+        }
+    }]], 
+    
     comment: {
         type: String
     },

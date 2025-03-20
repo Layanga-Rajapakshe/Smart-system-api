@@ -10,6 +10,6 @@ router.post('/', createKPIParameter);
 // Update KPI parameter (only CEO)
 router.put('/kpi-parameters/:id', checkPermissionMiddleware('update_parameters'), updateKPIParameter);
 router.get('/kpi-parameters', getAllKPIParameters);
-router.delete('/kpi-parameters/:id', checkPermissionMiddleware('delete_parameters'), deleteKPIParameter);
+router.delete('/kpi-parameters/:id', deleteKPIParameter);
 
 module.exports = router;

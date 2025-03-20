@@ -22,7 +22,7 @@ const createKPIParameter = async (req, res) => {
 
             // Validate each parameter in the section
             for (const item of sections[section]) {
-                if (!item.parameter || item.weight === undefined || item.value === undefined) {
+                if (!item.parameter || item.weight === undefined ) {
                     return res.status(400).json({
                         error: `Each item in the '${section}' section must include 'parameter', 'weight', and 'value'.`
                     });
