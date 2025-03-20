@@ -211,7 +211,7 @@ const calculateSalary = async (req, res) => {
 
 const showsalarysheet = async (req, res) => {
     try {
-        const { userId, month } = req.body;
+        const { userId, month } = req.params;
 
         if (!userId || !month) {
             return res.status(400).json({ error: "Missing required parameters: userId or month." });

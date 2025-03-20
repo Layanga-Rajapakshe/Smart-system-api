@@ -3,7 +3,8 @@ const Role = require('../models/RoleModel');
 
 const showSalaryParameters = async (req, res) => {
     try {
-        const { roleName } = req.body; // Expecting role name as a parameter
+        const { roleName } = req.params; // Expecting role name as a parameter
+        console.log(roleName);
         //const { companyId } = req.query; // Expecting company ID as a query parameter
 
        
