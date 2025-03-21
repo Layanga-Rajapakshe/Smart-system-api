@@ -13,8 +13,7 @@ router.put('/:id', authenticateUser, checkPermissionMiddleware('update_employee'
 router.delete('/:id', authenticateUser, checkPermissionMiddleware('delete_employee'), deleteEmployee);
 router.get('/kpi',authenticateUser,getEmployeeWithKPIs);
 router.get('/:employeeId/role', getEmployeeRole);
-router.get('/supervisees',authenticateUser,getSupervisees);
-router.get('/supervisees/:id',authenticateUser,getSupervisees);
+
 
 module.exports = router;
 
