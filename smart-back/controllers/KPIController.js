@@ -11,36 +11,38 @@ const createKPI = async (req, res) => {
         // Verify that the current user is the supervisor of the employee
         const employee = await Employee.findById(employeeId).populate('supervisor');
 
-        // if (!employee || employee.supervisor.toString() !== req.user._id.toString()) {
-        //     logger.error(`Unauthorized KPI creation attempt by: ${req.user._id}`);
-        //     return res.status(403).json({ message: 'You do not have permission to rate this employee.' });
-        // }
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found.' });
+        }
 
-        // Fetch the referenced KPIParameter
+        // Fetch KPIParameter
         const kpiParameter = await KPIParameter.findById(sectionId);
         if (!kpiParameter) {
             return res.status(404).json({ message: 'KPI parameters not found.' });
         }
 
-        // Modify values dynamically in the referenced schema
+        let totalKpi = 0; // To calculate the total KPI score
+
+        // Loop through each section and calculate the value based on weight
         for (const sectionName in kpiParameter.sections) {
-            const parameters = kpiParameter.sections[sectionName];
-            parameters.forEach((param) => {
-                if (param.weight && param.value) {
-                    // Example logic: Adjust the `value` based on the `weight`
-                    param.value = param.value * param.weight; // Adjusting value dynamically
+            const sectionValues = kpiParameter.sections[sectionName];
+            
+            // Loop through each parameter in the section
+            sectionValues.forEach(param => {
+                if (param.value && param.weight) {
+                    // Multiply the parameter value by its weight and add to the total KPI score
+                    totalKpi += param.value * param.weight;
                 }
             });
         }
 
-        // Save the modified KPIParameter
-        await kpiParameter.save();
-
-        // Create KPI document with the modified KPIParameter
+        // Create the KPI document with the calculated totalKpi
         const kpi = new KPI({
             employee: employeeId,
             supervisor: req.user._id,
-            section: kpiParameter._id, // Reference to the modified KPIParameter
+            section: kpiParameter._id, // Reference to the KPIParameter
+            values: kpiParameter.sections, // You can store the individual sections if necessary
+            Total_Kpi: totalKpi,
             notes,
             month,
             comment,
@@ -63,9 +65,8 @@ const getEmployeeKPIs = async (req, res) => {
         const kpis = await KPI.find({ employee: employeeId })
             .populate('supervisor', 'name email');
 
-        if (!kpis || kpis.length === 0) {
-            logger.error(`KPIs not found for employee: ${employeeId}`);
-            return res.status(404).json({ message: `KPIs not found for employee with id ${employeeId}` });
+        if (!kpis.length) {
+            return res.status(404).json({ message: `No KPIs found for employee ${employeeId}` });
         }
 
         res.status(200).json(kpis);
@@ -84,29 +85,33 @@ const updateKPI = async (req, res) => {
         const kpi = await KPI.findById(id);
 
         if (!kpi) {
-            logger.error(`KPI not found: ${id}`);
             return res.status(404).json({ message: 'KPI not found' });
         }
 
         // Only allow the supervisor who created the KPI to update it
         if (kpi.supervisor.toString() !== req.user._id.toString()) {
-            logger.error(`Unauthorized KPI update attempt by: ${req.user._id}`);
-            return res.status(403).json({ message: 'You do not have permission to update this KPI.' });
+            return res.status(403).json({ message: 'Unauthorized to update this KPI' });
         }
 
-        // Update sections dynamically
+        let totalKpi = 0;
+
+        // Update values based on sections if provided
         if (sections) {
-            for (const section in sections) {
-                if (kpi.sections[section]) {
-                    kpi.sections[section] = sections[section];
-                }
+            for (let i = 0; i < sections.length; i++) {
+                const section = sections[i];
+                section.forEach(param => {
+                    if (param.value && param.weight) {
+                        // Multiply the parameter value by its weight and add to the total KPI score
+                        totalKpi += param.value * param.weight;
+                    }
+                });
             }
         }
 
+        kpi.Total_Kpi = totalKpi; // Set the updated total KPI
         kpi.notes = notes ?? kpi.notes;
 
         await kpi.save();
-        logger.log(`KPI updated: ${id}`);
         res.status(200).json(kpi);
     } catch (error) {
         logger.error(`Failed to update KPI: ${error.message}`);
@@ -122,18 +127,15 @@ const deleteKPI = async (req, res) => {
         const kpi = await KPI.findById(id);
 
         if (!kpi) {
-            logger.error(`KPI not found: ${id}`);
             return res.status(404).json({ message: 'KPI not found' });
         }
 
         // Only allow the supervisor who created the KPI to delete it
         if (kpi.supervisor.toString() !== req.user._id.toString()) {
-            logger.error(`Unauthorized KPI deletion attempt by: ${req.user._id}`);
-            return res.status(403).json({ message: 'You do not have permission to delete this KPI.' });
+            return res.status(403).json({ message: 'Unauthorized to delete this KPI' });
         }
 
-        await kpi.remove();
-        logger.log(`KPI deleted: ${id}`);
+        await kpi.deleteOne();
         res.status(200).json({ message: 'KPI deleted successfully.' });
     } catch (error) {
         logger.error(`Failed to delete KPI: ${error.message}`);

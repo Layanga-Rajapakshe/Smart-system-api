@@ -11,18 +11,20 @@ const kpiSchema = new mongoose.Schema({
         ref: 'Employee',
         required: true
     },
-    section: [[{  // 2D array structure
-        parameter: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'KPIParameter', // Reference to KPIParameter model
-            required: true
+    values: {
+        type: [[Number]], // 2D array: 5 rows, dynamic columns
+        validate: {
+            validator: function (arr) {
+                return arr.length === 5; // Ensures exactly 5 rows
+            },
+            message: "Values must have exactly 5 rows."
         },
-        value: {
-            type: Number, // Assuming KPI value is numeric (adjust as needed)
-            required: true
-        }
-    }]], 
-    
+        required: true
+    },
+    Total_Kpi:{
+        type: Number,
+
+    },
     comment: {
         type: String
     },
