@@ -1,6 +1,7 @@
 const Employee = require('../models/EmployeeModel');
 const Attendance = require('../models/AttendanceModel');
 const SalaryModel = require('../models/SalaryModel'); // Corrected model name
+const Complaint = require("../model/Complaint");
 const mongoose = require('mongoose');
 
 // Convert "HH:MM:SS" to total seconds
@@ -247,17 +248,68 @@ const showsalarysheet = async (req, res) => {
     
    
  }
- const complainForm = async (req,res)=>
- {
-    try
-    {
-        const {userId,contact} =req.body;
-    }
-    catch
-    {
+ const sendComplaint = async (req, res) => {
+    try {
+        const { userId, text } = req.body;
 
+        if (!userId || !text) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        // Check if a complaint already exists for the user (optional: you can allow multiple complaints)
+        let complaint = await Complaint.findOne({ userId, status: "Open" });
+
+        if (!complaint) {
+            // If no complaint exists, create a new one
+            complaint = new Complaint({
+                userId,
+                status: "Open",
+                messages: [{ sender: "User", text }]
+            });
+        } else {
+            // If a complaint exists, just push a new message
+            complaint.messages.push({ sender: "User", text });
+        }
+
+        await complaint.save();
+
+        // Notify the admin in real-time
+        io.emit("newMessage", { complaintId: complaint._id, sender: "User", text });
+
+        res.status(200).json({ message: "Message sent successfully", complaint });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
- }
+};
+
+const replyToComplaint = async (req, res) => {
+    try {
+        const { complaintId, text } = req.body;
+
+        if (!complaintId || !text) {
+            return res.status(400).json({ error: "Complaint ID and message are required" });
+        }
+
+        const complaint = await Complaint.findById(complaintId);
+        if (!complaint) {
+            return res.status(404).json({ error: "Complaint not found" });
+        }
+
+        complaint.messages.push({ sender: "Admin", text });
+        await complaint.save();
+
+        // Notify the user in real-time
+        io.emit("newMessage", { complaintId, sender: "Admin", text });
+
+        res.status(200).json({ message: "Reply sent successfully", complaint });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
 
 
 

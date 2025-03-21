@@ -18,6 +18,16 @@ const NotificationSchema = new mongoose.Schema({
     isRead: { // Mark if the notification has been read
         type: Boolean,
         default: false
+    },
+    contacts:
+    {
+        type:String
+    },
+    status:
+    {
+        type: String,
+        enum:["Pending","Resolved"],
+        default: "pending"
     }
 }, { timestamps: true });
 

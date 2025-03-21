@@ -91,7 +91,18 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('A user disconnected:', socket.id);
     });
+
+    socket.on("sendMessage", async ({complaintId,sender,text})=>
+        {
+            try
+            {
+                const complaint =await Complaint
+            }
+        });
+
 });
+
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
