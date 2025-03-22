@@ -11,15 +11,13 @@ const roleSchema = new mongoose.Schema({
         type: [String], 
         default: [] 
     },
-    hierarchyLevel: {  // Add hierarchy level for roles
-        type: Number,
-        required: true,
-        default: 1  // Higher values indicate higher positions
+    temporaryPermission: {
+        type: [String], // Stack-like behavior with an array
+        default: []
     }
 }, {
     timestamps: true 
 });
-
 
 const Role = mongoose.model('Role', roleSchema);
 
