@@ -92,13 +92,46 @@ io.on('connection', (socket) => {
         console.log('A user disconnected:', socket.id);
     });
 
-    socket.on("sendMessage", async ({complaintId,sender,text})=>
-        {
-            try
-            {
-                const complaint =await Complaint
+    const adminSockets = {}; 
+    
+    io.on("connection", (socket) => {
+        console.log("A user connected:", socket.id);
+    
+        socket.on("sendMessage", async ({ complaintId, sender, text }) => {
+            try {
+                const complaint = await Complaint.findById(complaintId);
+                if (complaint) {
+                    complaint.messages.push({ sender, text });
+                    await complaint.save();
+    
+                    // Broadcast the message to all connected users
+                    io.emit("newMessage", { complaintId, sender, text });
+                }
+            } catch (error) {
+                console.error("Error handling message:", error);
             }
         });
+    
+        socket.on("disconnect", () => {
+            console.log("User disconnected:", socket.id);
+        });
+    });
+
+    socket.on("registerAdmin", (adminId) => {
+        adminSockets[adminId] = socket.id; // Store admin's socket ID
+        console.log(`Admin ${adminId} connected with socket ID: ${socket.id}`);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+        // Remove disconnected sockets
+        Object.keys(adminSockets).forEach((key) => {
+            if (adminSockets[key] === socket.id) {
+                delete adminSockets[key];
+            }
+        });
+    });
+    
 
 });
 
