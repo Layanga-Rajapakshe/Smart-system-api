@@ -1,6 +1,7 @@
 const Employee = require('../models/EmployeeModel');
 const Attendance = require('../models/AttendanceModel');
 const SalaryModel = require('../models/SalaryModel'); // Corrected model name
+const Complaint = require("../models/complaintModel");
 const mongoose = require('mongoose');
 
 // Convert "HH:MM:SS" to total seconds
@@ -16,7 +17,6 @@ const secondsToTimeString = (totalSeconds) => {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
 };
 function formatDateToCustomISO(date) {  
     // Get parts of the date  
@@ -33,7 +33,6 @@ function formatDateToCustomISO(date) {
     // Format to required string  
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+00:00`;  
 } 
-
 const calculateSalary = async (req, res) => {
     try {
         const { month, posts } = req.body;
@@ -169,7 +168,6 @@ const calculateSalary = async (req, res) => {
         res.status(500).json({ error: "Internal server error. Please try again later." });
     }
 };
-
 const showsalarysheet = async (req, res) => {
     try {
         const { userId, month } = req.params;
@@ -247,11 +245,171 @@ const showsalarysheet = async (req, res) => {
     
    
  }
+ const sendComplaint = async (req, res) => {
+    try {
+        const { userId, text } = req.body;
+
+        if (!userId || !text) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        // Find an admin dynamically
+        const admin = await Employee.findOne({ role: "Admin" });
+
+        if (!admin) {
+            return res.status(500).json({ error: "No admin found" });
+        }
+
+        let complaint = await Complaint.findOne({ userId, status: "Open" });
+
+        if (!complaint) {
+            complaint = new Complaint({
+                userId,
+                status: "Open",
+                messages: [{ sender: "User", text }]
+            });
+        } else {
+            complaint.messages.push({ sender: "User", text });
+        }
+
+        await complaint.save();
+
+        // Notify the admin in real-time (if online)
+        if (adminSockets[admin._id.toString()]) {
+            io.to(adminSockets[admin._id.toString()]).emit("newComplaint", { 
+                complaintId: complaint._id, 
+                userId, 
+                text 
+            });
+        }
+
+        res.status(200).json({ message: "Message sent successfully", complaint });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+const replyToComplaint = async (req, res) => {
+    try {
+        const { complaintId, text } = req.body;
+
+        if (!complaintId || !text) {
+            return res.status(400).json({ error: "Complaint ID and message are required" });
+        }
+
+        const complaint = await Complaint.findById(complaintId);
+        if (!complaint) {
+            return res.status(404).json({ error: "Complaint not found" });
+        }
+
+        complaint.messages.push({ sender: "Admin", text });
+        await complaint.save();
+
+        // Notify the user in real-time
+        io.emit("newMessage", { complaintId, sender: "Admin", text });
+
+        res.status(200).json({ message: "Reply sent successfully", complaint });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+// Get chat history for a specific complaint
+const getChatHistory = async (req, res) => {
+    try {
+        const { complaintId } = req.params;
+
+        const complaint = await Complaint.findById(complaintId);
+        if (!complaint) {
+            return res.status(404).json({ error: "Complaint not found" });
+        }
+
+        res.status(200).json({ messages: complaint.messages });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+const salarySummary = async (req, res) => {
+    try {
+        const { Etype ,Month} = req.params; // staff-epf, staff-non-epf, technician
+        let employees;
+
+        if (Etype === "staff-epf") {
+            employees = await Employee.find({ isEPF: true });
+        } else if (Etype === "staff-non-epf") {
+            employees = await Employee.find({ isEPF: false });
+        } else if (Etype === "technician") {
+            employees = await Employee.find({ role: "technician" });
+        } else {
+            return res.status(400).json({ message: "Invalid employee type" });
+        }
+
+        if (!employees.length) {
+            return res.status(404).json({ message: `No employees found for ${Etype}` });
+        }
+
+        const employeeMap = {};
+        employees.forEach(emp => {
+            employeeMap[emp._id] = { name: emp.name };
+        });
+
+        const employeeIds = employees.map(emp => emp._id);
+        const salRecords = await SalaryModel.find({ UserId: { $in: employeeIds },
+        month:Month });
+
+        let totalCompanyPay = 0;
+        let totalEPFEmployee = 0;
+        let totalEPFEmployer = 0;
+        const salSummary = {};
+
+        salRecords.forEach(record => {
+            const userId = record.UserId;
+            if (!salSummary[userId]) {
+                salSummary[userId] = {
+                   name: employeeMap[userId]?.name || "Unknown",  
+                    totalPay: 0,
+                    totalEPFemployee: 0,
+                    totalEPFemployer: 0
+                };
+            }
+            salSummary[userId].totalPay += record.FinalSalary;
+            salSummary[userId].totalEPFemployee += record.EPF_employee;
+            salSummary[userId].totalEPFemployer += record.EPF_employer;
+
+            totalCompanyPay += record.FinalSalary;
+            totalEPFEmployee += record.EPF_employee;
+            totalEPFEmployer += record.EPF_employer;
+        });
+
+        for (const userId of Object.keys(salSummary)) {
+            await SalarySummaryModel.findOneAndUpdate(
+                { userId },
+                {
+                    totalPay: salSummary[userId].totalPay,
+                    totalEPFemployee: salSummary[userId].totalEPFemployee,
+                    totalEPFemployer: salSummary[userId].totalEPFemployer
+                },
+                { upsert: true, new: true }
+            );
+        }
+
+        return res.status(200).json({
+            individualSalaries: salSummary,
+            totalCompanyPay,
+            totalEPFEmployee,
+            totalEPFEmployer
+        });
+    } catch (error) {
+        console.error("Error fetching salary summary:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
 
 
 
 
 
-
-module.exports = { calculateSalary,showsalarysheet,salaryHistory };
+module.exports = { calculateSalary,showsalarysheet,salaryHistory,sendComplaint,replyToComplaint,getChatHistory,salarySummary };
 
