@@ -2,6 +2,7 @@ const express = require("express");
 const Request = require("../models/Permission");
 const RequestType = require("../models/RequestModel");
 const Employee = require("../models/EmployeeModel");
+const Role = require("../models/RoleModel");
 
 // Create a new request
 const createRequest = async (req, res) => {
@@ -79,10 +80,9 @@ const updateRequestStatus = async (req, res) => {
             return res.status(404).json({ error: "Request not found" });
         }
 
-        const approver = await Employee.findById(req.user.id);
-
-        if (!approver) {
-            return res.status(403).json({ error: "Approver not found" });
+        const approver = await Employee.findById(req.user.id).populate("role");
+        if (!approver || !approver.role) {
+            return res.status(403).json({ error: "Approver not found or missing role" });
         }
 
         const requestTypeData = await RequestType.findById(request.requestType);
@@ -90,6 +90,7 @@ const updateRequestStatus = async (req, res) => {
             return res.status(404).json({ error: "Request type not found" });
         }
 
+        // Check hierarchy level
         if (approver.hierarchyLevel < requestTypeData.hierarchyLevelRequired) {
             return res.status(403).json({ error: "Insufficient hierarchy level to approve this request" });
         }
@@ -99,6 +100,27 @@ const updateRequestStatus = async (req, res) => {
         request.approvalDate = new Date();
 
         const updatedRequest = await request.save();
+
+        // If request is approved, add the permission to temporaryPermission
+        if (status === "approved") {
+            const requester = await Employee.findById(request.requestedBy).populate("role");
+
+            if (!requester || !requester.role) {
+                return res.status(404).json({ error: "Requester not found or missing role" });
+            }
+
+            const role = await Role.findById(requester.role._id);
+            if (!role) {
+                return res.status(404).json({ error: "Role not found" });
+            }
+
+            // Ensure the permission is not already in the list
+            if (!role.temporaryPermission.includes(requestTypeData.permission)) {
+                role.temporaryPermission.push(requestTypeData.permission);
+                await role.save();
+            }
+        }
+
         res.status(200).json(updatedRequest);
     } catch (error) {
         console.error("Error updating request status:", error);
