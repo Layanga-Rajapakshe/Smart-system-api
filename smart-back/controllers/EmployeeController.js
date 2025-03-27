@@ -183,7 +183,6 @@ const updateEmployee = async (req, res) => {
     }
 };
 
-
 const deleteEmployee = async (req, res) => {
     const { id } = req.params;
     try {

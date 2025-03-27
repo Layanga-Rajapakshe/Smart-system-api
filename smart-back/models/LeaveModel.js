@@ -8,7 +8,12 @@ const LeaveSchema = new mongoose.Schema(
             ref:'Employee',
             required:true
         },
-        AnnualLeaves:
+        year:
+        {
+            type:Number,
+            required:true
+        },
+        /*AnnualLeaves:
         {
             type:Number,
             required:true,
@@ -19,7 +24,7 @@ const LeaveSchema = new mongoose.Schema(
             type:Number,
             required:true,
             default:7
-        },
+        },*/
         leave_balance_annual:
         {
             type:Number,
@@ -34,38 +39,6 @@ const LeaveSchema = new mongoose.Schema(
         {
             type:Number,
             default :0
-        },
-        requested_day:
-        {
-            type:Date,
-            required:true
-        },
-        requesting_Date:
-        {
-            type:Date,
-            required:true
-        },
-        reason:
-        {
-            type:String,
-            required:true
-        },
-        is_Accepted:
-        {
-            type:Boolean,
-            default:false
-        },
-        AcceptedBy_supervisor:
-        {
-            type:String
-        },
-        AcceptedBy_CEO:
-        {
-            type:String
-        },
-        comment:
-        {
-            type:String
         }
     },
     {
