@@ -4,7 +4,7 @@ const {
   getAllRequestTypes,
   getRequestTypeById,
   updateRequestType,
-  deleteRequestType,
+  deleteRequestType
 } = require("../controllers/RequestTypeController");
 
 const router = express.Router();

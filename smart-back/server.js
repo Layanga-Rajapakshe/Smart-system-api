@@ -65,6 +65,7 @@ app.use('/api/salary',SalarySketchRoute);
 app.use('/api/supervisee',SuperviseeRoute);
 
 
+
 // Default Route
 app.get('/', (req, res) => {
     res.status(200).send('SmartSystem API with WebRTC is running successfully!');
