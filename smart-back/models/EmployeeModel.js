@@ -114,7 +114,18 @@ const employeeSchema = new mongoose.Schema({
     {
         type: Number,
         
-    }
+    },
+    AnnualLeaves:
+    {
+        type: Number,
+        Default:0,
+        required:true
+    },
+    CasualLeaves:
+    {
+        type:Number,
+        Default:0,
+        required:true    }
 }, {
     timestamps: true
 });
