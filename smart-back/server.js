@@ -25,6 +25,7 @@ const PermissionRoute = require('./routes/PermissionRoute');
 const SalaryParaRoute = require('./routes/SalaryManagementRoute');
 const SalarySketchRoute = require('./routes/salaryCalculationRoute');
 const SuperviseeRoute = require('./routes/SuperviseeRoute');
+const LeaveRoute = require('./routes/LeaveRoutes');
 
 const app = express();
 const server = http.createServer(app); // HTTP server for Express and Socket.IO
@@ -63,6 +64,7 @@ app.use('/api/permission', PermissionRoute);
 app.use('/api/salParam',SalaryParaRoute);
 app.use('/api/salary',SalarySketchRoute);
 app.use('/api/supervisee',SuperviseeRoute);
+app.use('/api/leave',LeaveRoute);
 
 
 
