@@ -163,7 +163,7 @@ employeeSchema.methods.checkPassword = async function (password) {
 employeeSchema.methods.isPasswordExpired = function () {
     const currentDate = new Date();
     const expiryDate = new Date(this.passwordChangedAt);
-    expiryDate.setMonth(expiryDate.getMonth() + 4);
+    expiryDate.setMonth(expiryDate.getMonth() + 5);
     return currentDate > expiryDate;
 };
 employeeSchema.pre('save', async function (next) {
