@@ -140,11 +140,71 @@ const deleteKPIParameter = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// Add a parameter to an existing KPI section
+const addParametersToSection = async (req, res) => {
+    try {
+        const { sections } = req.body;
+
+        if (!sections || typeof sections !== 'object') {
+            return res.status(400).json({ error: 'Invalid or missing "sections" object in request body.' });
+        }
+
+        const kpi = await KPIParameter.findById(req.params.id);
+        if (!kpi) {
+            return res.status(404).json({ error: 'KPI parameter set not found.' });
+        }
+
+        for (const [section, items] of Object.entries(sections)) {
+            if (!Array.isArray(items)) {
+                return res.status(400).json({ error: `Section '${section}' must be an array.` });
+            }
+
+            if (!kpi.sections[section]) {
+                return res.status(400).json({ error: `Section '${section}' does not exist.` });
+            }
+
+            for (const item of items) {
+                const { parameter, weight } = item;
+                if (!parameter || weight === undefined) {
+                    return res.status(400).json({
+                        error: 'Each item must include parameter and weight.'
+                    });
+                }
+
+                kpi.sections[section].push({
+                    parameter,
+                    weight,
+                    value: item.value || 0 // default value if not provided
+                });
+            }
+        }
+
+        await kpi.save();
+        res.status(200).json(kpi);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getKPIParameterById = async (req, res) => {
+    try {
+        const kpiParameter = await KPIParameter.findById(req.params.id);
+        if (!kpiParameter) {
+            return res.status(404).json({ message: 'KPI parameter set not found' });
+        }
+        res.status(200).json(kpiParameter);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 module.exports = {
     createKPIParameter,
     addParameterToSection,
     updateKPIParameter,
     getAllKPIParameters,
-    deleteKPIParameter
+    deleteKPIParameter,
+    addParametersToSection,
+    getKPIParameterById
 };
