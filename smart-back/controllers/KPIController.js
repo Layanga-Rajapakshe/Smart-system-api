@@ -1,6 +1,6 @@
 const KPI = require('../models/KPImodel');
 const Employee = require('../models/EmployeeModel');
-const KPIParameter = require('../models/KPIParametermodel');
+const KPIParameter = require('../models/KpiParametermodel');
 const logger = require('../utils/Logger');
 
 // Create KPI

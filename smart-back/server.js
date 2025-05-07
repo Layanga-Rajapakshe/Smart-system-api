@@ -19,7 +19,7 @@ const NotificationRoute = require('./routes/NotificationRoute');
 const TwoWeekRoute = require('./routes/TwoWeekRoute');
 const MeetingRoute = require('./routes/MeetingRoute');
 const ProjectRoute = require('./routes/ProjectRoute');
-const KPIParameter = require('./routes/KPIParameterRoute');
+const KPIParameter = require('./routes/KPIParametersRoute');
 const RequestRoute = require('./routes/RequestRoute');
 const PermissionRoute = require('./routes/PermissionRoute');
 const SalaryParaRoute = require('./routes/SalaryManagementRoute');
@@ -32,7 +32,7 @@ const server = http.createServer(app); // HTTP server for Express and Socket.IO
 const io = new Server(server, {
     cors: {
         origin: true, // Allow all origins (customize this in production)
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
 });
