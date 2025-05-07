@@ -90,11 +90,6 @@ const updateRequestStatus = async (req, res) => {
             return res.status(404).json({ error: "Request type not found" });
         }
 
-        // Check hierarchy level
-        if (approver.hierarchyLevel < requestTypeData.hierarchyLevelRequired) {
-            return res.status(403).json({ error: "Insufficient hierarchy level to approve this request" });
-        }
-
         request.status = status;
         request.approvedBy = req.user.id;
         request.approvalDate = new Date();
