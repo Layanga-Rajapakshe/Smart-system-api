@@ -32,7 +32,7 @@ const server = http.createServer(app); // HTTP server for Express and Socket.IO
 const io = new Server(server, {
     cors: {
         origin: true, // Allow all origins (customize this in production)
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
 });
