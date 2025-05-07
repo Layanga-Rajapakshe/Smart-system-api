@@ -54,6 +54,55 @@ const createKPIParameter = async (req, res) => {
     }
 };
 
+const addParameterToSection = async (req, res) => {
+    try {
+        const { id, sectionName } = req.params;
+        const { parameter, weight } = req.body;
+
+        // Validate section
+        const validSections = ['attitude', 'habits', 'skills', 'performance', 'knowledge'];
+        if (!validSections.includes(sectionName)) {
+            return res.status(400).json({ error: "Invalid section name." });
+        }
+
+        // Validate data
+        if (!parameter || weight === undefined) {
+            return res.status(400).json({ error: "Both 'parameter' and 'weight' are required." });
+        }
+        if (weight < 0 || weight > 1) {
+            return res.status(400).json({ error: "Weight must be between 0 and 1." });
+        }
+
+        // Find the KPI document
+        const kpi = await KPIParameter.findById(id);
+        if (!kpi) {
+            return res.status(404).json({ error: "KPI document not found." });
+        }
+
+        // Check if sections object and the specific section array exist
+        if (!kpi.sections) {
+            kpi.sections = {};
+        }
+        
+        if (!kpi.sections[sectionName]) {
+            kpi.sections[sectionName] = [];
+        }
+
+        // Add the new parameter object to the selected section
+        kpi.sections[sectionName].push({ parameter, weight });
+        
+        // Save the updated document
+        await kpi.save();
+
+        res.status(200).json({ 
+            message: `Parameter added to ${sectionName}.`, 
+            data: kpi 
+        });
+    } catch (error) {
+        console.error('Error adding parameter:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
 
 
 // Update KPI parameters
@@ -94,6 +143,7 @@ const deleteKPIParameter = async (req, res) => {
 
 module.exports = {
     createKPIParameter,
+    addParameterToSection,
     updateKPIParameter,
     getAllKPIParameters,
     deleteKPIParameter
