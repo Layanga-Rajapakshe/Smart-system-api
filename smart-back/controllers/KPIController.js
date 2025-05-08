@@ -6,7 +6,7 @@ const logger = require('../utils/Logger');
 // Create KPI
 const createKPI = async (req, res) => {
     try {
-        const { employeeId, notes, month, comment, parameterId } = req.body;
+        const { employeeId, notes, month, comment, parameterId, Total_Kpi } = req.body;
 
         const employee = await Employee.findById(employeeId);
         if (!employee) {
@@ -18,31 +18,10 @@ const createKPI = async (req, res) => {
             return res.status(404).json({ message: 'KPI parameters not found.' });
         }
 
-        const sectionValues = req.body.sections || {};
-        let totalKpi = 0;
-        const processedValues = [];
-
-        const sectionNames = ['attitude', 'habits', 'skills', 'performance', 'knowledge'];
-
-        for (const sectionName of sectionNames) {
-            const sectionParameters = kpiParameter.sections[sectionName] || [];
-            const sectionScores = [];
-
-            for (let i = 0; i < sectionParameters.length; i++) {
-                const parameter = sectionParameters[i];
-                const value = sectionValues[sectionName]?.[i]?.value || 0;
-                const weightedScore = value * parameter.weight;
-                totalKpi += weightedScore;
-                sectionScores.push(value);
-            }
-
-            processedValues.push(sectionScores);
-        }
-
         const kpi = new KPI({
             employee: employeeId,
-            values: processedValues,
-            Total_Kpi: totalKpi,
+            parameterId,
+            Total_Kpi,
             notes,
             month,
             comment,
@@ -62,7 +41,9 @@ const getEmployeeKPIs = async (req, res) => {
     try {
         const { employeeId } = req.params;
 
-        const kpis = await KPI.find({ employee: employeeId });
+        const kpis = await KPI.find({ employee: employeeId })
+            .populate('parameterId')
+            .populate('employee', 'name employeeId');
 
         if (!kpis.length) {
             return res.status(404).json({ message: `No KPIs found for employee ${employeeId}` });
@@ -75,51 +56,42 @@ const getEmployeeKPIs = async (req, res) => {
     }
 };
 
+// Get a specific KPI by ID
+const getKPIById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const kpi = await KPI.findById(id)
+            .populate('employee', 'name employeeId')
+            .populate('parameterId');
+            
+        if (!kpi) {
+            return res.status(404).json({ message: 'KPI not found' });
+        }
+
+        res.status(200).json(kpi);
+    } catch (error) {
+        logger.error(`Failed to fetch KPI: ${error.message}`);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // Update a specific KPI record
 const updateKPI = async (req, res) => {
     try {
         const { id } = req.params;
-        const { notes, comment, sections, parameterId } = req.body;
+        const { notes, comment, Total_Kpi, parameterId } = req.body;
 
         const kpi = await KPI.findById(id);
         if (!kpi) {
             return res.status(404).json({ message: 'KPI not found' });
         }
 
-        const kpiParameter = await KPIParameter.findById(parameterId);
-        if (!kpiParameter) {
-            return res.status(404).json({ message: 'KPI parameters not found.' });
-        }
-
-        if (sections) {
-            let totalKpi = 0;
-            const processedValues = [];
-            const sectionNames = ['attitude', 'habits', 'skills', 'performance', 'knowledge'];
-
-            for (const sectionName of sectionNames) {
-                const sectionParameters = kpiParameter.sections[sectionName] || [];
-                const sectionScores = [];
-
-                for (let i = 0; i < sectionParameters.length; i++) {
-                    const parameter = sectionParameters[i];
-                    const value = sections[sectionName]?.[i]?.value !== undefined
-                        ? sections[sectionName][i].value
-                        : (kpi.values[sectionNames.indexOf(sectionName)]?.[i] || 0);
-
-                    const weightedScore = value * parameter.weight;
-                    totalKpi += weightedScore;
-                    sectionScores.push(value);
-                }
-
-                processedValues.push(sectionScores);
-            }
-
-            kpi.values = processedValues;
-            kpi.Total_Kpi = totalKpi;
-        }
-
+        // Update fields if provided
         if (notes !== undefined) kpi.notes = notes;
         if (comment !== undefined) kpi.comment = comment;
+        if (Total_Kpi !== undefined) kpi.Total_Kpi = Total_Kpi;
+        if (parameterId !== undefined) kpi.parameterId = parameterId;
 
         await kpi.save();
         res.status(200).json(kpi);
@@ -147,9 +119,26 @@ const deleteKPI = async (req, res) => {
     }
 };
 
+// Get all KPIs (admin function)
+const getAllKPIs = async (req, res) => {
+    try {
+        const kpis = await KPI.find()
+            .populate('employee', 'name employeeId')
+            .populate('parameterId')
+            .sort('-createdAt');
+
+        res.status(200).json(kpis);
+    } catch (error) {
+        logger.error(`Failed to fetch all KPIs: ${error.message}`);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createKPI,
     getEmployeeKPIs,
+    getKPIById,
     updateKPI,
     deleteKPI,
+    getAllKPIs
 };
