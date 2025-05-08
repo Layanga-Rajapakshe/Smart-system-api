@@ -6,11 +6,6 @@ const kpiSchema = new mongoose.Schema({
         ref: 'Employee',
         required: true
     },
-    supervisor: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
-        required: true
-    },
     parameterId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'KPIParameter',
