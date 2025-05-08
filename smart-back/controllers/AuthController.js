@@ -23,24 +23,27 @@ const login = async (req, res) => {
         // Generate JWT token
         const token = user.generateAuthToken();
 
-        // Set the token as an HTTP-only cookie
+        // Set the token as an HTTP-only cookie with proper cross-domain settings
         res.cookie('auth_token', token, {
             httpOnly: true, 
             secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'strict',
-            maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // Allow cross-site cookies in production
+            maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
+            path: '/' // Ensure cookie is sent with all requests
         });
 
         logger.log(`User logged in: ${user.email}`);
 
-        const role = await  Role.findById(user.role);
+        const role = await Role.findById(user.role);
 
+        // Also return the token in the response body for client-side storage alternative
         res.status(200).json({ 
             id: user._id,
             name: user.name,
             role: role.name,
             avatar: user?.avatar,
             userId: user.userId,
+            token: token // Include token in response
         });
     } catch (error) {
         logger.error(`Login error for email ${req.body.email}: ${error.message}`);
@@ -54,7 +57,8 @@ const logout = (req, res) => {
         res.clearCookie('auth_token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            path: '/'
         });
 
         logger.log(`User logged out: ${req.user?.email || 'unknown'}`);
