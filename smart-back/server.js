@@ -31,7 +31,7 @@ const app = express();
 const server = http.createServer(app); // HTTP server for Express and Socket.IO
 const io = new Server(server, {
     cors: {
-        origin: true, // Allow all origins (customize this in production)
+        origin: 'https://smart-system-one.vercel.app/',
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
