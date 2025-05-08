@@ -55,7 +55,6 @@ const createKPI = async (req, res) => {
         // Create the KPI document with the calculated totalKpi
         const kpi = new KPI({
             employee: employeeId,
-            supervisor: req.user._id,
             values: processedValues, // Store as 2D array as per schema
             Total_Kpi: totalKpi,
             notes,
