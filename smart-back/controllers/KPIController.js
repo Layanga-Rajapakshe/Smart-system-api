@@ -11,15 +11,11 @@ const createKPI = async (req, res) => {
         
         // Find employee and validate
         const employee = await Employee.findById(employeeId);
-        if (!employee) {
-            return res.status(404).json({ message: 'Employee not found.' });
-        }
+       
 
         // Fetch KPIParameter
         const kpiParameter = await KPIParameter.findById(parameterId);
-        if (!kpiParameter) {
-            return res.status(404).json({ message: 'KPI parameters not found.' });
-        }
+        
 
         // Extract values from request or initialize them
         const sectionValues = req.body.sections || {};
