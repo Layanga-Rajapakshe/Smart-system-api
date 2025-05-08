@@ -9,8 +9,6 @@ const createKPI = async (req, res) => {
         const { employeeId, notes, month, comment } = req.body;
         const { parameterId } = '67dbb5bbe73f44694fb87ea1'; // KPI Parameter ID from request
         
-        // Find employee and validate
-        const employee = await Employee.findById(employeeId).populate('supervisor');
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found.' });
         }
