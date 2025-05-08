@@ -6,56 +6,42 @@ const logger = require('../utils/Logger');
 // Create KPI
 const createKPI = async (req, res) => {
     try {
-        const { employeeId, notes, month, comment,parameterId } = req.body;
-         // KPI Parameter ID from request
-        
-        // Find employee and validate
+        const { employeeId, notes, month, comment, parameterId } = req.body;
+
         const employee = await Employee.findById(employeeId);
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found.' });
         }
 
-        // Fetch KPIParameter
         const kpiParameter = await KPIParameter.findById(parameterId);
         if (!kpiParameter) {
             return res.status(404).json({ message: 'KPI parameters not found.' });
         }
 
-        // Extract values from request or initialize them
         const sectionValues = req.body.sections || {};
-        
-        // Process values and calculate total KPI
         let totalKpi = 0;
-        const processedValues = []; // 2D array to store values for each section
-        
-        // Process each section
+        const processedValues = [];
+
         const sectionNames = ['attitude', 'habits', 'skills', 'performance', 'knowledge'];
-        
+
         for (const sectionName of sectionNames) {
             const sectionParameters = kpiParameter.sections[sectionName] || [];
             const sectionScores = [];
-            
-            // For each parameter in this section
+
             for (let i = 0; i < sectionParameters.length; i++) {
                 const parameter = sectionParameters[i];
-                // Get value from request or default to 0
                 const value = sectionValues[sectionName]?.[i]?.value || 0;
-                
-                // Calculate weighted score
                 const weightedScore = value * parameter.weight;
                 totalKpi += weightedScore;
-                
-                // Store the value in our 2D array
                 sectionScores.push(value);
             }
-            
+
             processedValues.push(sectionScores);
         }
 
-        // Create the KPI document with the calculated totalKpi
         const kpi = new KPI({
             employee: employeeId,
-            values: processedValues, // Store as 2D array as per schema
+            values: processedValues,
             Total_Kpi: totalKpi,
             notes,
             month,
@@ -76,8 +62,7 @@ const getEmployeeKPIs = async (req, res) => {
     try {
         const { employeeId } = req.params;
 
-        const kpis = await KPI.find({ employee: employeeId })
-            .populate('supervisor', 'name email');
+        const kpis = await KPI.find({ employee: employeeId });
 
         if (!kpis.length) {
             return res.status(404).json({ message: `No KPIs found for employee ${employeeId}` });
@@ -94,59 +79,45 @@ const getEmployeeKPIs = async (req, res) => {
 const updateKPI = async (req, res) => {
     try {
         const { id } = req.params;
-        const { notes, comment, sections } = req.body;
+        const { notes, comment, sections, parameterId } = req.body;
 
         const kpi = await KPI.findById(id);
         if (!kpi) {
             return res.status(404).json({ message: 'KPI not found' });
         }
 
-        // Only allow the supervisor who created the KPI to update it
-        if (kpi.supervisor.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Unauthorized to update this KPI' });
-        }
-
-        // Get the associated KPI parameters to get weights
-        const parameterId = req.body.parameterId;
         const kpiParameter = await KPIParameter.findById(parameterId);
         if (!kpiParameter) {
             return res.status(404).json({ message: 'KPI parameters not found.' });
         }
 
-        // If sections are provided, recalculate KPI
         if (sections) {
             let totalKpi = 0;
-            const processedValues = []; // 2D array for values
+            const processedValues = [];
             const sectionNames = ['attitude', 'habits', 'skills', 'performance', 'knowledge'];
-            
+
             for (const sectionName of sectionNames) {
                 const sectionParameters = kpiParameter.sections[sectionName] || [];
                 const sectionScores = [];
-                
-                // For each parameter in this section
+
                 for (let i = 0; i < sectionParameters.length; i++) {
                     const parameter = sectionParameters[i];
-                    // Get value from request or keep existing value
-                    const value = sections[sectionName]?.[i]?.value !== undefined 
-                        ? sections[sectionName][i].value 
+                    const value = sections[sectionName]?.[i]?.value !== undefined
+                        ? sections[sectionName][i].value
                         : (kpi.values[sectionNames.indexOf(sectionName)]?.[i] || 0);
-                    
-                    // Calculate weighted score
+
                     const weightedScore = value * parameter.weight;
                     totalKpi += weightedScore;
-                    
-                    // Store the value in our 2D array
                     sectionScores.push(value);
                 }
-                
+
                 processedValues.push(sectionScores);
             }
-            
+
             kpi.values = processedValues;
             kpi.Total_Kpi = totalKpi;
         }
 
-        // Update other fields if provided
         if (notes !== undefined) kpi.notes = notes;
         if (comment !== undefined) kpi.comment = comment;
 
@@ -166,11 +137,6 @@ const deleteKPI = async (req, res) => {
         const kpi = await KPI.findById(id);
         if (!kpi) {
             return res.status(404).json({ message: 'KPI not found' });
-        }
-
-        // Only allow the supervisor who created the KPI to delete it
-        if (kpi.supervisor.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Unauthorized to delete this KPI' });
         }
 
         await kpi.deleteOne();
