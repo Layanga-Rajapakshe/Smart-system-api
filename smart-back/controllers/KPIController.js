@@ -6,9 +6,10 @@ const logger = require('../utils/Logger');
 // Create KPI
 const createKPI = async (req, res) => {
     try {
-        const { employeeId, notes, month, comment, sectionId } = req.body;
+        const { employeeId, notes, month, comment } = req.body;
+        const sectionId = '67dbb5bbe73f44694fb87ea1'; 
 
-        // Verify that the current user is the supervisor of the employee
+        
         const employee = await Employee.findById(employeeId).populate('supervisor');
 
         if (!employee) {
@@ -21,16 +22,12 @@ const createKPI = async (req, res) => {
             return res.status(404).json({ message: 'KPI parameters not found.' });
         }
 
-        let totalKpi = 0; // To calculate the total KPI score
-
-        // Loop through each section and calculate the value based on weight
+        let totalKpi = 0; 
         for (const sectionName in kpiParameter.sections) {
             const sectionValues = kpiParameter.sections[sectionName];
-            
-            // Loop through each parameter in the section
+
             sectionValues.forEach(param => {
                 if (param.value && param.weight) {
-                    // Multiply the parameter value by its weight and add to the total KPI score
                     totalKpi += param.value * param.weight;
                 }
             });
@@ -40,8 +37,8 @@ const createKPI = async (req, res) => {
         const kpi = new KPI({
             employee: employeeId,
             supervisor: req.user._id,
-            section: kpiParameter._id, // Reference to the KPIParameter
-            values: kpiParameter.sections, // You can store the individual sections if necessary
+            section: kpiParameter._id,
+            values: kpiParameter.sections,
             Total_Kpi: totalKpi,
             notes,
             month,
