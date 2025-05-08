@@ -1,4 +1,4 @@
-const KPIParameter = require('../models/KPIParametermodel');
+const KPIParameter = require('../models/KpiParametermodel');
 
 // Add KPI parameters
 const createKPIParameter = async (req, res) => {
@@ -27,11 +27,7 @@ const createKPIParameter = async (req, res) => {
                         error: `Each item in the '${section}' section must include 'parameter', 'weight', and 'value'.`
                     });
                 }
-                if (item.weight < 0 || item.weight > 1) {
-                    return res.status(400).json({
-                        error: `Weight in '${section}' section must be between 0 and 1.`
-                    });
-                }
+                
                 if (item.value < 0 || item.value > 10) {
                     return res.status(400).json({
                         error: `Value in '${section}' section must be between 0 and 10.`
