@@ -6,39 +6,56 @@ const logger = require('../utils/Logger');
 // Create KPI
 const createKPI = async (req, res) => {
     try {
-        const { employeeId, notes, month, comment } = req.body;
-        const sectionId = '67dbb5bbe73f44694fb87ea1'; 
-
+        const { employeeId, notes, month, comment, parameterId } = req.body;
         
+        // Find employee and validate
         const employee = await Employee.findById(employeeId).populate('supervisor');
-
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found.' });
         }
 
         // Fetch KPIParameter
-        const kpiParameter = await KPIParameter.findById(sectionId);
+        const kpiParameter = await KPIParameter.findById(parameterId);
         if (!kpiParameter) {
             return res.status(404).json({ message: 'KPI parameters not found.' });
         }
 
-        let totalKpi = 0; 
-        for (const sectionName in kpiParameter.sections) {
-            const sectionValues = kpiParameter.sections[sectionName];
-
-            sectionValues.forEach(param => {
-                if (param.value && param.weight) {
-                    totalKpi += param.value * param.weight;
-                }
-            });
+        // Extract values from request or initialize them
+        const sectionValues = req.body.sections || {};
+        
+        // Process values and calculate total KPI
+        let totalKpi = 0;
+        const processedValues = []; // 2D array to store values for each section
+        
+        // Process each section
+        const sectionNames = ['attitude', 'habits', 'skills', 'performance', 'knowledge'];
+        
+        for (const sectionName of sectionNames) {
+            const sectionParameters = kpiParameter.sections[sectionName] || [];
+            const sectionScores = [];
+            
+            // For each parameter in this section
+            for (let i = 0; i < sectionParameters.length; i++) {
+                const parameter = sectionParameters[i];
+                // Get value from request or default to 0
+                const value = sectionValues[sectionName]?.[i]?.value || 0;
+                
+                // Calculate weighted score
+                const weightedScore = value * parameter.weight;
+                totalKpi += weightedScore;
+                
+                // Store the value in our 2D array
+                sectionScores.push(value);
+            }
+            
+            processedValues.push(sectionScores);
         }
 
         // Create the KPI document with the calculated totalKpi
         const kpi = new KPI({
             employee: employeeId,
             supervisor: req.user._id,
-            section: kpiParameter._id,
-            values: kpiParameter.sections,
+            values: processedValues, // Store as 2D array as per schema
             Total_Kpi: totalKpi,
             notes,
             month,
@@ -77,10 +94,9 @@ const getEmployeeKPIs = async (req, res) => {
 const updateKPI = async (req, res) => {
     try {
         const { id } = req.params;
-        const { sections, notes } = req.body;
+        const { notes, comment, sections } = req.body;
 
         const kpi = await KPI.findById(id);
-
         if (!kpi) {
             return res.status(404).json({ message: 'KPI not found' });
         }
@@ -90,23 +106,49 @@ const updateKPI = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized to update this KPI' });
         }
 
-        let totalKpi = 0;
-
-        // Update values based on sections if provided
-        if (sections) {
-            for (let i = 0; i < sections.length; i++) {
-                const section = sections[i];
-                section.forEach(param => {
-                    if (param.value && param.weight) {
-                        // Multiply the parameter value by its weight and add to the total KPI score
-                        totalKpi += param.value * param.weight;
-                    }
-                });
-            }
+        // Get the associated KPI parameters to get weights
+        const parameterId = req.body.parameterId;
+        const kpiParameter = await KPIParameter.findById(parameterId);
+        if (!kpiParameter) {
+            return res.status(404).json({ message: 'KPI parameters not found.' });
         }
 
-        kpi.Total_Kpi = totalKpi; // Set the updated total KPI
-        kpi.notes = notes ?? kpi.notes;
+        // If sections are provided, recalculate KPI
+        if (sections) {
+            let totalKpi = 0;
+            const processedValues = []; // 2D array for values
+            const sectionNames = ['attitude', 'habits', 'skills', 'performance', 'knowledge'];
+            
+            for (const sectionName of sectionNames) {
+                const sectionParameters = kpiParameter.sections[sectionName] || [];
+                const sectionScores = [];
+                
+                // For each parameter in this section
+                for (let i = 0; i < sectionParameters.length; i++) {
+                    const parameter = sectionParameters[i];
+                    // Get value from request or keep existing value
+                    const value = sections[sectionName]?.[i]?.value !== undefined 
+                        ? sections[sectionName][i].value 
+                        : (kpi.values[sectionNames.indexOf(sectionName)]?.[i] || 0);
+                    
+                    // Calculate weighted score
+                    const weightedScore = value * parameter.weight;
+                    totalKpi += weightedScore;
+                    
+                    // Store the value in our 2D array
+                    sectionScores.push(value);
+                }
+                
+                processedValues.push(sectionScores);
+            }
+            
+            kpi.values = processedValues;
+            kpi.Total_Kpi = totalKpi;
+        }
+
+        // Update other fields if provided
+        if (notes !== undefined) kpi.notes = notes;
+        if (comment !== undefined) kpi.comment = comment;
 
         await kpi.save();
         res.status(200).json(kpi);
@@ -122,7 +164,6 @@ const deleteKPI = async (req, res) => {
         const { id } = req.params;
 
         const kpi = await KPI.findById(id);
-
         if (!kpi) {
             return res.status(404).json({ message: 'KPI not found' });
         }
