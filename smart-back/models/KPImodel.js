@@ -11,6 +11,11 @@ const kpiSchema = new mongoose.Schema({
         ref: 'Employee',
         required: true
     },
+    parameterId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'KPIParameter',
+        required: true
+    },
     values: {
         type: [[Number]], // 2D array: 5 rows, dynamic columns
         validate: {

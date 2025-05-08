@@ -6,8 +6,8 @@ const logger = require('../utils/Logger');
 // Create KPI
 const createKPI = async (req, res) => {
     try {
-        const { employeeId, notes, month, comment } = req.body;
-        const { parameterId } = '67dbb5bbe73f44694fb87ea1'; // KPI Parameter ID from request
+        const { employeeId, notes, month, comment,parameterId } = req.body;
+         // KPI Parameter ID from request
         
         // Find employee and validate
         const employee = await Employee.findById(employeeId);
