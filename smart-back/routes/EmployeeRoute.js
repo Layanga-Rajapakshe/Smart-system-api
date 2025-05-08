@@ -6,7 +6,7 @@ const {authenticateUser} = require('../middleware/AuthenticateUser');
 
 
 
-router.get('/', authenticateUser, checkPermissionMiddleware('view_employee_details'), getEmployees);
+router.get('/', authenticateUser, getEmployees);
 router.get('/:id', authenticateUser, getEmployee);
 router.post('/',authenticateUser,checkPermissionMiddleware('create_employee'), createEmployee);
 router.put('/:id', authenticateUser, checkPermissionMiddleware('update_employee'), updateEmployee);
