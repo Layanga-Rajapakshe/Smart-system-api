@@ -12,10 +12,6 @@ const createPermissionRequest = async (req, res) => {
             return res.status(400).json({ error: "Permission and details are required" });
         }
 
-        if (!req.user || !req.user.id) {
-            return res.status(401).json({ error: "Unauthorized. Please log in." });
-        }
-
         const newPermissionRequest = new PermissionRequest({
             permission,
             requestedBy: req.user.id,
@@ -31,6 +27,8 @@ const createPermissionRequest = async (req, res) => {
         res.status(500).json({ error: "Failed to create permission request" });
     }
 };
+
+module.exports = { createPermissionRequest };
 
 // Get all permission requests (for admins/managers)
 const getAllPermissionRequests = async (req, res) => {
